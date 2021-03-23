@@ -5,40 +5,64 @@ using UnityEngine;
 public enum BallState
 {
     Free,
-    Targeted
+    Targeted,
+    Captured
 }
 
 public class BallBehaviour : MonoBehaviour
 {
-    GameManagerBehaviour gameManager;
-    BallState ballState;
-    AgentBehaviour agent;
-    Vector3 fleefrom;
-
-    float speed = 2.5f;
+    public GameManagerBehaviour gameManager;
+    public Rigidbody rigidBody;
+    public BallState ballState;
+    public AgentBehaviour agent;
+    public Vector3 fleefrom;
+    public Vector3 newPos;
+    public float speed = 2.5f;
 
     public void Init(GameManagerBehaviour p_gameManger)
     {
+        Debug.Log("Init BallBehaviour.");
         gameManager = p_gameManger;
+        rigidBody = GetComponent<Rigidbody>();
         ballState = BallState.Free;
         agent = null;
     }
 
     public void BallUpdate()
     {
-        if(gameManager.AmIBeingChased(this, ref fleefrom))
+        if (gameManager.AmIBeingChased(this, ref fleefrom))
         {
-            // fleefrom no has the data stored as a reference
+            ballState = BallState.Targeted;
+        }
+        else if (gameManager.AmICaptured(this, out agent))
+        {
+            ballState = BallState.Captured;
+        }
+        else
+            ballState = BallState.Free;
 
 
-            //Debug.Log(fleefrom);
+        //else if (ballState != BallState.Targeted)
+        //    ballState = BallState.Free;
 
-            if (Vector3.Distance(transform.position, fleefrom) > 5.0f)
+        // fleefrom no has the data stored as a reference
+        //Debug.Log(fleefrom);
+
+        if (ballState == BallState.Targeted)
+        {
+            if (Vector3.Distance(transform.position, fleefrom) > 3.0f)
             {
                 Debug.Log(fleefrom);
 
-                transform.position = Vector3.MoveTowards(transform.position, fleefrom + transform.position, speed * Time.deltaTime);
+                newPos = Vector3.MoveTowards(transform.position, fleefrom + transform.position, speed * Time.deltaTime);
+                newPos.y = transform.position.y;
+                transform.position = newPos;
             }
+        }
+        else if (ballState == BallState.Captured)
+        {
+            rigidBody.velocity = Vector3.zero;
+            transform.position = Vector3.MoveTowards(transform.position, agent.transform.position, speed * Time.deltaTime);
         }
     }
 
@@ -52,17 +76,42 @@ public class BallBehaviour : MonoBehaviour
         agent = p_agent;
     }
 
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Goal"))
+        {
+            Debug.Log("GOOOOOOOOOOOOOOOOALLL!");
+        }
+    }
 
+    private void OnTriggerEnter(Collider other)
+    {
+        if(other.gameObject.CompareTag("Goal"))
+        {
+            if (other.gameObject.CompareTag("Goal"))
+            {
+                Debug.Log("GOOOOOOOOOOOOOOOOALLL!");
+                ResetBall();
+            }
+        }
+    }
+
+    private void ResetBall()
+    {
+        transform.position = new Vector3(Random.Range(1, 49), 1, Random.Range(-1, -49));
+        ballState = BallState.Free;
+        gameManager.Goal(this, agent);
+    }
     //// Start is called before the first frame update
     //void Start()
     //{
-        
+
     //}
 
 
     //// Update is called once per frame
     //void Update()
     //{
-        
+
     //}
 }
