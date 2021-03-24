@@ -32,7 +32,7 @@ public class GameManagerBehaviour : MonoBehaviour
         // Agent Instantiate.
         {
             agentPrefab = Resources.Load<AgentBehaviour>("Prefabs/Agent");
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 4; i++)
             {
                 agentPrefab = Instantiate(agentPrefab);
                 agentPrefab.transform.position = new Vector3(Random.Range(1, 50), 2, Random.Range(-1, -50));
@@ -59,7 +59,7 @@ public class GameManagerBehaviour : MonoBehaviour
         // Cube Instantiate.
         {
             cubePrefab = Resources.Load<CubeBehaviour>("Prefabs/Cube");
-            for (int i = 0; i < 50; i++)
+            for (int i = 0; i < 100; i++)
             {
                 cubePrefab = Instantiate(cubePrefab);
                 cubePrefab.transform.position = new Vector3(Random.Range(1, 50), Random.Range(2, 10), Random.Range(-1, -50));

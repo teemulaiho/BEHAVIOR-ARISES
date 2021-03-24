@@ -34,6 +34,12 @@ public class AgentBehaviour : MonoBehaviour
     public Vector3 kickForce;
     public bool colliding;
 
+
+    // Agent Behaviour Tree Begin
+    static BT_Node bt_root;
+    //static Selector bt_root;
+    // Agent Behaviour Tree End
+
     public void Init(GameManagerBehaviour p_gameManager)
     {
         Debug.Log("Init AgentBehaviour.");
@@ -53,6 +59,25 @@ public class AgentBehaviour : MonoBehaviour
         colliding = false;
 
         kickForce = new Vector3(50, 0, 50);
+
+        targetBall = gameManager.GetBall();
+
+
+        // Agent Behaviour Tree Begin  
+        if (bt_root == null)
+        {
+            Selector root = new Selector();     // Temporary root.
+
+            Sequencer IsBallFree = new Sequencer();
+            IsBallFree.children.Add(new NodeIsBallFree());
+            IsBallFree.children.Add(new NodeTargetBall());
+            IsBallFree.children.Add(new NodeMoveTowardsTarget());
+            IsBallFree.children.Add(new NodeCaptureBall());
+
+            root.children.Add(IsBallFree);
+            bt_root = root;
+        }
+        // Agent Behaviour Tree End
     }
 
     public void AgentUpdate()
@@ -65,6 +90,8 @@ public class AgentBehaviour : MonoBehaviour
         {
             gameManager.RemoveCaptureData(this);
         }
+
+        //bt_root.Run(this);
 
         Sense();
         Act();
