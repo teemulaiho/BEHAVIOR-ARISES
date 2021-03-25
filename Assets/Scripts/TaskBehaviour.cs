@@ -92,16 +92,33 @@ public class NodePrint : BT_Node
     }
 }
 
+
 public class NodeDoIHaveBall : BT_Node
 {
-    BallBehaviour ball;
-
     public override ReturnState Run(AgentBehaviour agent)
     {
-        return ReturnState.SUCCESS;
+        if (agent.targetBall.agent == agent)
+        {
+            agent.RemoveTargetAgent();
+            return ReturnState.SUCCESS;
+        }
+        else
+            return ReturnState.FAILURE;
     }
 }
-
+public class NodeDoesSomeoneElseHaveBall : BT_Node
+{
+    public override ReturnState Run(AgentBehaviour agent)
+    {
+        if (agent.targetBall.agent != null && 
+            agent.targetBall.agent != agent)
+        {
+            return ReturnState.SUCCESS;
+        }
+        else
+            return ReturnState.FAILURE;
+    }
+}
 public class NodeIsBallFree : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
@@ -114,23 +131,24 @@ public class NodeIsBallFree : BT_Node
             return ReturnState.FAILURE;      
     }
 }
-
-public class NodeTargetBall : BT_Node
-{
-    public override ReturnState Run(AgentBehaviour agent)
-    {
-        agent.targetPos = agent.targetBall.transform.position;
-        return ReturnState.SUCCESS;
-    }
-}
-
 public class NodeMoveTowardsTarget : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
     {
-        if (Vector3.Distance(agent.transform.position, agent.targetPos) < 1)
+        if (agent.targetPos == agent.targetGoal.transform.position)
         {
-            Debug.Log("Reached Target: " + agent.targetPos);
+            agent.transform.position = Vector3.MoveTowards(agent.transform.position, agent.targetPos, agent.agentSpeed * Time.deltaTime);
+
+            if (agent.transform.position != agent.targetGoal.transform.position)
+            {
+                return ReturnState.RUNNING;
+            }
+            else
+                return ReturnState.SUCCESS;
+        }
+        else if (Vector3.Distance(agent.transform.position, agent.targetPos) < 1)
+        {
+            //Debug.Log("Reached Target: " + agent.targetPos);
             return ReturnState.SUCCESS;
         }
         else
@@ -140,14 +158,68 @@ public class NodeMoveTowardsTarget : BT_Node
         }
     }
 }
+public class NodeTargetBall : BT_Node
+{
+    public override ReturnState Run(AgentBehaviour agent)
+    {
+        Debug.Log("Targeting Ball.");
+        agent.targetPos = agent.targetBall.transform.position;
+        return ReturnState.SUCCESS;
+    }
+}
+public class NodeTargetAgent : BT_Node
+{
+    public override ReturnState Run(AgentBehaviour agent)
+    {
+        Debug.Log("Targeting Agent.");
 
+        if (agent.targetBall.agent != null &&
+            agent.targetBall.agent != agent)
+        {
+            Debug.Log("Targeting agent who has ball.");
+            agent.targetPos = agent.targetBall.agent.transform.position;
+            agent.targetAgent = agent.targetBall.agent;
+            return ReturnState.SUCCESS;
+        }
+        else if (agent.targetBall.agent == agent)
+        {
+            Debug.Log("I have ball, why would I target myself?");
+            return ReturnState.FAILURE;
+        }
+
+        return ReturnState.FAILURE;
+    }
+}
+public class NodeTargetGoal : BT_Node
+{
+    public override ReturnState Run(AgentBehaviour agent)
+    {
+        Debug.Log("Targeting Goal.");
+        agent.targetPos = agent.targetGoal.transform.position;
+        return ReturnState.SUCCESS;
+    }
+}
+public class NodeTargetPowerup : BT_Node
+{
+    public override ReturnState Run(AgentBehaviour agent)
+    {
+        if (agent.targetPowerup != null)
+        {
+            Debug.Log("Targeting Powerup: " + agent.targetPowerup.state);
+            agent.targetPos = agent.targetPowerup.transform.position;
+            return ReturnState.SUCCESS;
+        }
+
+        return ReturnState.FAILURE;
+    }
+}
 public class NodeCaptureBall : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
     {
         if (Vector3.Distance(agent.transform.position, agent.targetBall.transform.position) < 1)
         {
-            Debug.Log("Agent:" + agent.name + " captured ball at: " + agent.targetBall.transform.position);
+            //Debug.Log("Agent:" + agent.name + " captured ball at: " + agent.targetBall.transform.position);
             agent.targetBall.SetAgent(agent);
             return ReturnState.SUCCESS;
         }
@@ -158,6 +230,98 @@ public class NodeCaptureBall : BT_Node
         }           
     }
 }
+public class NodeCapturePowerup : BT_Node
+{
+    public override ReturnState Run(AgentBehaviour agent)
+    {
+        if (agent.agentCollision != null)
+        {
+            if (agent.agentCollision.collider.CompareTag("Powerup"))
+            {
+                Debug.Log("Collided with powerup.");
+                return ReturnState.SUCCESS;
+            }
+        }
+
+        Debug.Log("Powerup too for away for collision.");
+        return ReturnState.FAILURE;
+    }
+}
+public class NodeScoreGoal : BT_Node
+{
+    public override ReturnState Run(AgentBehaviour agent)
+    {
+        if (Vector3.Distance(agent.transform.position, agent.targetGoal.transform.position) < 0.02)
+        {
+            Debug.Log("Agent:" + agent.name + " scored goal!");
+            //agent.targetBall.ResetBall();
+            return ReturnState.SUCCESS;
+        }
+        else
+        {
+            //Debug.Log("Could not score, distance to goal is: " + Vector3.Distance(agent.transform.position, agent.targetGoal.transform.position));
+            return ReturnState.FAILURE;
+        }
+    }
+}
+public class NodeKickAgent : BT_Node
+{
+    public override ReturnState Run(AgentBehaviour agent)
+    {
+        if (agent.colliding)
+        {
+            Debug.Log("Reahed agent, proceed to kick.");
+            agent.targetAgent.rigidBody.AddExplosionForce(2000f, agent.transform.position, 10f);
+            agent.targetAgent.targetBall.RemoveAgent(agent.targetAgent);
+            agent.targetAgent.RemoveBall();
+            agent.RemoveTargetAgent();
+            return ReturnState.SUCCESS;
+        }
+
+        return ReturnState.FAILURE;
+    }
+}
+public class NodeIsBallCloseEnough: BT_Node
+{
+    public override ReturnState Run(AgentBehaviour agent)
+    {
+        float timeToBall = Vector3.Distance(agent.transform.position, agent.targetBall.transform.position) / agent.agentSpeed;
+
+        if (timeToBall > 10)
+        {
+            Debug.Log("Ball is too far away from me.");
+            return ReturnState.FAILURE;
+        }
+
+        Debug.Log("Ball is close enough.");
+        return ReturnState.SUCCESS;
+    }
+}
+public class NodeIsPowerupCloseEnough : BT_Node
+{
+    public override ReturnState Run(AgentBehaviour agent)
+    {
+        if (agent.targetPowerup == null)
+        {
+            return ReturnState.FAILURE;
+        }
+        else
+        {
+            float timeToPowerUp = Vector3.Distance(agent.transform.position, agent.targetPowerup.transform.position) / agent.agentSpeed;
+
+            if (timeToPowerUp > 10)
+            {
+                Debug.Log("Powerup is to far away from me.");
+                return ReturnState.FAILURE;
+            }
+        }
+
+        Debug.Log("Powerup is close enough.");
+        return ReturnState.SUCCESS;
+    }
+}
+
+
 
 /*
  * main()

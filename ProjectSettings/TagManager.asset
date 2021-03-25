@@ -7,6 +7,7 @@ TagManager:
   - Agent
   - Ball
   - Goal
+  - Powerup
   layers:
   - Default
   - TransparentFX

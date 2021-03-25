@@ -7,11 +7,13 @@ public class GameManagerBehaviour : MonoBehaviour
     AgentBehaviour agentPrefab;
     BallBehaviour ballPrefab;
     GoalBehaviour goalPrefab;
+    PowerupBehaviour powerupPrefab;
     CubeBehaviour cubePrefab;
 
     List<AgentBehaviour> agents = new List<AgentBehaviour>();
     List<BallBehaviour> balls = new List<BallBehaviour>();
     List<GoalBehaviour> goals = new List<GoalBehaviour>();
+    List<PowerupBehaviour> powerups = new List<PowerupBehaviour>();
     List<CubeBehaviour> cubes = new List<CubeBehaviour>();
 
     public Dictionary<AgentBehaviour, BallBehaviour> chaseInfo = new Dictionary<AgentBehaviour, BallBehaviour>();
@@ -29,41 +31,63 @@ public class GameManagerBehaviour : MonoBehaviour
     {
         Debug.Log("Start GameManager.");
 
-        // Agent Instantiate.
+        // Instantiate GameObjects
         {
-            agentPrefab = Resources.Load<AgentBehaviour>("Prefabs/Agent");
-            for (int i = 0; i < 4; i++)
+            // Agent Instantiate.
             {
-                agentPrefab = Instantiate(agentPrefab);
-                agentPrefab.transform.position = new Vector3(Random.Range(1, 50), 2, Random.Range(-1, -50));
-                agents.Add(agentPrefab);
+                GameObject agentParent = new GameObject("AGENTS");
+                agentPrefab = Resources.Load<AgentBehaviour>("Prefabs/Agent");
+                for (int i = 0; i < 1; i++)
+                {
+                    agentPrefab = Instantiate(agentPrefab);
+                    agentPrefab.transform.SetParent(agentParent.transform);
+                    agentPrefab.transform.position = new Vector3(Random.Range(1, 50), 2, Random.Range(-1, -50));
+                    agents.Add(agentPrefab);
+                }
             }
-        }
 
-        // Ball Instantiate.
-        {
-            ballPrefab = Resources.Load<BallBehaviour>("Prefabs/Ball");
-            ballPrefab = Instantiate(ballPrefab);
-            ballPrefab.transform.position = new Vector3(Random.Range(1, 50), 1, Random.Range(-1, -50));
-            balls.Add(ballPrefab);
-        }
-
-        // Goal Instantiate.
-        {
-            goalPrefab = Resources.Load<GoalBehaviour>("Prefabs/Goal");
-            goalPrefab = Instantiate(goalPrefab);
-            goalPrefab.transform.position = new Vector3(25, 1.1f, -25);
-            goals.Add(goalPrefab);
-        }
-
-        // Cube Instantiate.
-        {
-            cubePrefab = Resources.Load<CubeBehaviour>("Prefabs/Cube");
-            for (int i = 0; i < 100; i++)
+            // Ball Instantiate.
             {
-                cubePrefab = Instantiate(cubePrefab);
-                cubePrefab.transform.position = new Vector3(Random.Range(1, 50), Random.Range(2, 10), Random.Range(-1, -50));
-                cubes.Add(cubePrefab);
+                GameObject ballParent = new GameObject("BALLS");
+                ballPrefab = Resources.Load<BallBehaviour>("Prefabs/Ball");
+                ballPrefab = Instantiate(ballPrefab);
+                ballPrefab.transform.SetParent(ballParent.transform);
+                ballPrefab.transform.position = new Vector3(Random.Range(1, 50), 1, Random.Range(-1, -50));
+                balls.Add(ballPrefab);
+            }
+
+            // Goal Instantiate.
+            {
+                GameObject goalParent = new GameObject("GOALS");
+                goalPrefab = Resources.Load<GoalBehaviour>("Prefabs/Goal");
+                goalPrefab = Instantiate(goalPrefab);
+                goalPrefab.transform.SetParent(goalParent.transform);
+                goalPrefab.transform.position = new Vector3(25, 1.1f, -25);
+                goals.Add(goalPrefab);
+            }
+
+            // Powerup Instantiate.
+            {
+                GameObject powerupParent = new GameObject("POWERUPS");
+                powerupPrefab = Resources.Load<PowerupBehaviour>("Prefabs/Powerup");
+                powerupPrefab = Instantiate(powerupPrefab);
+                powerupPrefab.transform.SetParent(powerupParent.transform);
+                powerupPrefab.transform.position = new Vector3(Random.Range(1, 50), Random.Range(2, 10), Random.Range(-1, -50));
+                //powerupPrefab.transform.position = new Vector3(25, 1.1f, -25);
+                powerups.Add(powerupPrefab);
+            }
+
+            // Cube Instantiate.
+            {
+                GameObject cubeParent = new GameObject("CUBES");
+                cubePrefab = Resources.Load<CubeBehaviour>("Prefabs/Cube");
+                for (int i = 0; i < 100; i++)
+                {
+                    cubePrefab = Instantiate(cubePrefab);
+                    cubePrefab.transform.SetParent(cubeParent.transform);
+                    cubePrefab.transform.position = new Vector3(Random.Range(1, 50), Random.Range(2, 10), Random.Range(-1, -50));
+                    cubes.Add(cubePrefab);
+                }
             }
         }
 
@@ -72,6 +96,7 @@ public class GameManagerBehaviour : MonoBehaviour
             for (int i = 0; i < agents.Count; i++)
             {
                 goalInfo[agents[i]] = goals[0];
+
             }
 
             for (int i = 0; i < agents.Count; i++)
@@ -96,6 +121,11 @@ public class GameManagerBehaviour : MonoBehaviour
             for (int i = 0; i < goals.Count; i++)
             {
                 goals[i].Init(this);
+            }
+
+            for (int i = 0; i < powerups.Count; i++)
+            {
+                powerups[i].Init(this);
             }
 
             for (int i = 0; i < cubes.Count; i++)
@@ -137,6 +167,16 @@ public class GameManagerBehaviour : MonoBehaviour
         if (balls.Count > 0)
         {
             return balls[0];
+        }
+
+        return null;
+    }
+
+    public PowerupBehaviour GetPowerup()
+    {
+        if (powerups.Count > 0)
+        {
+            return powerups[0];
         }
 
         return null;

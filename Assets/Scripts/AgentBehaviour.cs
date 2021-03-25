@@ -19,10 +19,13 @@ public class AgentBehaviour : MonoBehaviour
     public AgentState agentState;
     public MeshRenderer meshRenderer;
     public Rigidbody rigidBody;
+    public Collider agentCollider;
+    public Collision agentCollision;
 
     public GoalBehaviour targetGoal;
     public BallBehaviour targetBall;
     public AgentBehaviour targetAgent;
+    public PowerupBehaviour targetPowerup;
 
     public Vector3 targetPos;
     public Quaternion originalRotation;
@@ -48,12 +51,15 @@ public class AgentBehaviour : MonoBehaviour
         gameManager = p_gameManager;
         agentState = AgentState.Idle;
         targetBall = null;
+        targetAgent = null;
+        targetPowerup = gameManager.GetPowerup();
         agentSpeed = 2.5f;
         agentRecovery = 2f;
         recoveryTime = 0;
         targetGoal = gameManager.GetGoal(this);
         meshRenderer = GetComponent<MeshRenderer>();
         rigidBody = GetComponent<Rigidbody>();
+        agentCollider = GetComponent<CapsuleCollider>();
         originalRotation = transform.rotation;
         score = 0;
         colliding = false;
@@ -68,13 +74,42 @@ public class AgentBehaviour : MonoBehaviour
         {
             Selector root = new Selector();     // Temporary root.
 
+            Sequencer DoIHaveBall = new Sequencer();
+            DoIHaveBall.children.Add(new NodeDoIHaveBall());
+            DoIHaveBall.children.Add(new NodeTargetGoal());
+            DoIHaveBall.children.Add(new NodeMoveTowardsTarget());
+            DoIHaveBall.children.Add(new NodeScoreGoal());
+
+
+            Sequencer IsPowerUpNearby = new Sequencer();
+            IsPowerUpNearby.children.Add(new NodeIsPowerupCloseEnough());
+            IsPowerUpNearby.children.Add(new NodeTargetPowerup());
+            IsPowerUpNearby.children.Add(new NodeMoveTowardsTarget());
+            IsPowerUpNearby.children.Add(new NodeCapturePowerup());
+
+            Sequencer DoesSomeoneElseHaveBall = new Sequencer();
+            DoesSomeoneElseHaveBall.children.Add(new NodeDoesSomeoneElseHaveBall());
+            DoesSomeoneElseHaveBall.children.Add(new NodeTargetAgent());
+            DoesSomeoneElseHaveBall.children.Add(new NodeMoveTowardsTarget());
+            DoesSomeoneElseHaveBall.children.Add(new NodeKickAgent());
+
             Sequencer IsBallFree = new Sequencer();
             IsBallFree.children.Add(new NodeIsBallFree());
             IsBallFree.children.Add(new NodeTargetBall());
             IsBallFree.children.Add(new NodeMoveTowardsTarget());
             IsBallFree.children.Add(new NodeCaptureBall());
 
-            root.children.Add(IsBallFree);
+            Selector IsBallNearby = new Selector();
+            IsBallNearby.children.Add(new NodeIsBallCloseEnough());
+            IsBallNearby.children.Add(DoesSomeoneElseHaveBall);
+            IsBallNearby.children.Add(IsBallFree)   ;
+
+
+            root.children.Add(DoIHaveBall);
+            root.children.Add(IsBallNearby);
+            root.children.Add(IsPowerUpNearby);
+            //root.children.Add(DoesSomeoneElseHaveBall);
+            //root.children.Add(IsBallFree);
             bt_root = root;
         }
         // Agent Behaviour Tree End
@@ -91,10 +126,10 @@ public class AgentBehaviour : MonoBehaviour
             gameManager.RemoveCaptureData(this);
         }
 
-        //bt_root.Run(this);
+        bt_root.Run(this);
 
-        Sense();
-        Act();
+        //Sense();
+        //Act();
     }
 
     void Sense()
@@ -205,46 +240,82 @@ public class AgentBehaviour : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Ball") && 
-            agentState != AgentState.Attacking      && 
-            agentState != AgentState.Idle)
-        {
-            gameManager.UpdateCaptureData(this, targetBall);
-            agentState = AgentState.Returning;
-            targetPos = targetGoal.transform.position;
-        }
+        agentCollision = collision;
 
         if (collision.gameObject.CompareTag("Agent"))
         {
-            colliding = true;
-            if (agentState == AgentState.Attacking)
+            if (targetAgent != null)
             {
-                collision.collider.attachedRigidbody.AddExplosionForce(2000f, transform.position, 10f);
-                agentState = AgentState.Idle;
-                agentRecovery = 1f;
-            }
-            else if (agentState == AgentState.Fetching)
-            {
-                agentRecovery = 3f;
-            }
-            else if (agentState == AgentState.Returning)
-            {
-                Debug.Log("AgentBehaviour.cs - Calling RemoveCaptureData. " + meshRenderer.material.color);
-                gameManager.RemoveCaptureData(this);
-                agentRecovery = 3f;
-            }
-            else if (agentState == AgentState.Idle)
-            {
-                collision.collider.attachedRigidbody.AddExplosionForce(1000f, transform.position, 10f);
-                agentRecovery = 3f;
-            }
+                if (collision.collider == targetAgent.agentCollider)
+                    colliding = true;
+            }   
         }
+
+
+        //if (collision.gameObject.CompareTag("Ball") &&
+        //    agentState != AgentState.Attacking &&
+        //    agentState != AgentState.Idle)
+        //{
+        //    gameManager.UpdateCaptureData(this, targetBall);
+        //    agentState = AgentState.Returning;
+        //    targetPos = targetGoal.transform.position;
+        //}
+
+        //if (collision.gameObject.CompareTag("Agent"))
+        //{
+        //    colliding = true;
+        //    if (agentState == AgentState.Attacking)
+        //    {
+        //        collision.collider.attachedRigidbody.AddExplosionForce(2000f, transform.position, 10f);
+        //        agentState = AgentState.Idle;
+        //        agentRecovery = 1f;
+        //    }
+        //    else if (agentState == AgentState.Fetching)
+        //    {
+        //        agentRecovery = 3f;
+        //    }
+        //    else if (agentState == AgentState.Returning)
+        //    {
+        //        Debug.Log("AgentBehaviour.cs - Calling RemoveCaptureData. " + meshRenderer.material.color);
+        //        gameManager.RemoveCaptureData(this);
+        //        agentRecovery = 3f;
+        //    }
+        //    else if (agentState == AgentState.Idle)
+        //    {
+        //        collision.collider.attachedRigidbody.AddExplosionForce(1000f, transform.position, 10f);
+        //        agentRecovery = 3f;
+        //    }
+        //}
+    }
+
+    private void OnCollisionExit(Collision collision)
+    {
+        agentCollision = null;
     }
 
     public void AddScore()
     {
         score++;
         Debug.Log("Agent " + meshRenderer.material.color.ToString() + " Score: " + score);
+    }
+
+    public void RemoveBall()
+    {
+        if (targetBall != null)
+        {
+            if (targetBall.agent == this)
+            {
+                targetBall.agent = null;
+            }
+            
+            //targetBall = null;
+        }
+    }
+
+    public void RemoveTargetAgent()
+    {
+        if (targetAgent != null)
+            targetAgent = null;
     }
 
     //// Start is called before the first frame update
