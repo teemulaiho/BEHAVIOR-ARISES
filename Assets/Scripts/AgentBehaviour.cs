@@ -81,33 +81,50 @@ public class AgentBehaviour : MonoBehaviour
             DoIHaveBall.children.Add(new NodeScoreGoal());
 
 
-            Sequencer IsPowerUpNearby = new Sequencer();
-            IsPowerUpNearby.children.Add(new NodeIsPowerupCloseEnough());
-            IsPowerUpNearby.children.Add(new NodeTargetPowerup());
-            IsPowerUpNearby.children.Add(new NodeMoveTowardsTarget());
-            IsPowerUpNearby.children.Add(new NodeCapturePowerup());
+            Sequencer IsPowerupKick = new Sequencer();
+            IsPowerupKick.children.Add(new NodeIsPowerupKick());
+            IsPowerupKick.children.Add(new NodeIsPowerupCloseEnough());
+            IsPowerupKick.children.Add(new NodeTargetPowerup());
+            IsPowerupKick.children.Add(new NodeMoveTowardsTarget());
+            IsPowerupKick.children.Add(new NodeCapturePowerup());
+
+            Sequencer IsPowerupSpeed = new Sequencer();
+            IsPowerupSpeed.children.Add(new NodeIsPowerupSpeed());
+            IsPowerupSpeed.children.Add(new NodeIsPowerupCloseEnough());
+            IsPowerupSpeed.children.Add(new NodeTargetPowerup());
+            IsPowerupSpeed.children.Add(new NodeMoveTowardsTarget());
+            IsPowerupSpeed.children.Add(new NodeCapturePowerup());
 
             Sequencer DoesSomeoneElseHaveBall = new Sequencer();
+            DoesSomeoneElseHaveBall.children.Add(new NodeIsBallCloseEnough());
             DoesSomeoneElseHaveBall.children.Add(new NodeDoesSomeoneElseHaveBall());
             DoesSomeoneElseHaveBall.children.Add(new NodeTargetAgent());
             DoesSomeoneElseHaveBall.children.Add(new NodeMoveTowardsTarget());
             DoesSomeoneElseHaveBall.children.Add(new NodeKickAgent());
 
             Sequencer IsBallFree = new Sequencer();
+            IsBallFree.children.Add(new NodeIsBallCloseEnough());
             IsBallFree.children.Add(new NodeIsBallFree());
             IsBallFree.children.Add(new NodeTargetBall());
             IsBallFree.children.Add(new NodeMoveTowardsTarget());
             IsBallFree.children.Add(new NodeCaptureBall());
 
             Selector IsBallNearby = new Selector();
-            IsBallNearby.children.Add(new NodeIsBallCloseEnough());
+            //IsBallNearby.children.Add(new NodeIsBallCloseEnough());
+            IsBallNearby.children.Add(DoIHaveBall);
             IsBallNearby.children.Add(DoesSomeoneElseHaveBall);
-            IsBallNearby.children.Add(IsBallFree)   ;
+            IsBallNearby.children.Add(IsBallFree);
+            //IsBallFree.children.Add(IsPowerUpNearby);
 
 
-            root.children.Add(DoIHaveBall);
+            Selector IsPowerupNearby = new Selector();
+            IsPowerupNearby.children.Add(IsPowerupSpeed);
+            IsPowerupNearby.children.Add(IsPowerupKick);
+
+
+            //root.children.Add(DoIHaveBall);
             root.children.Add(IsBallNearby);
-            root.children.Add(IsPowerUpNearby);
+            root.children.Add(IsPowerupNearby);
             //root.children.Add(DoesSomeoneElseHaveBall);
             //root.children.Add(IsBallFree);
             bt_root = root;

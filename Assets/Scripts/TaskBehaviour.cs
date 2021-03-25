@@ -320,7 +320,27 @@ public class NodeIsPowerupCloseEnough : BT_Node
         return ReturnState.SUCCESS;
     }
 }
+public class NodeIsPowerupSpeed : BT_Node
+{
+    public override ReturnState Run(AgentBehaviour agent)
+    {
+        if (agent.targetPowerup.state.ToString() == "Speed")
+            return ReturnState.SUCCESS;
 
+        return ReturnState.FAILURE;
+    }
+}
+
+public class NodeIsPowerupKick : BT_Node
+{
+    public override ReturnState Run(AgentBehaviour agent)
+    {
+        if (agent.targetPowerup.state.ToString() == "Kick")
+            return ReturnState.SUCCESS;
+
+        return ReturnState.FAILURE;
+    }
+}
 
 
 /*

@@ -29,7 +29,7 @@ public class PowerupBehaviour : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    public void PowerupUpdate()
     {
         if (state == PowerupState.Speed)
         {

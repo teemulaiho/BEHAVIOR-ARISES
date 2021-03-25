@@ -147,6 +147,16 @@ public class GameManagerBehaviour : MonoBehaviour
         {
             balls[i].BallUpdate();
         }
+
+        for (int i = 0; i < powerups.Count; i++)
+        {
+            powerups[i].PowerupUpdate();
+        }
+
+        //for (int i = 0; i < cubes.Count; i++)
+        //{
+        //    cubes[i].CubeUpdate();
+        //}
     }
 
     public BallBehaviour GetFreeBall(AgentBehaviour agent)

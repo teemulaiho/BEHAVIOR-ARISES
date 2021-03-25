@@ -21,7 +21,7 @@ public class CubeBehaviour : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    public void CubeUpdate()
     {
         if (Input.GetKeyDown(KeyCode.Space))
         {
