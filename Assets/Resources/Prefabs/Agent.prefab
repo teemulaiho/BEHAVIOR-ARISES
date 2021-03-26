@@ -125,16 +125,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gameManager: {fileID: 0}
   agentState: 0
+  agentRole: 0
+  powerupState: 0
   meshRenderer: {fileID: 0}
   rigidBody: {fileID: 0}
+  agentCollider: {fileID: 0}
   targetGoal: {fileID: 0}
   targetBall: {fileID: 0}
   targetAgent: {fileID: 0}
+  targetPowerup: {fileID: 0}
   targetPos: {x: 0, y: 0, z: 0}
   originalRotation: {x: 0, y: 0, z: 0, w: 0}
   agentSpeed: 0
   agentRecovery: 0
   recoveryTime: 0
   score: 0
+  team: 0
   kickForce: {x: 0, y: 0, z: 0}
   colliding: 0

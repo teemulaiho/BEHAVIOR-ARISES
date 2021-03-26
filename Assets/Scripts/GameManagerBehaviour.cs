@@ -37,11 +37,12 @@ public class GameManagerBehaviour : MonoBehaviour
             {
                 GameObject agentParent = new GameObject("AGENTS");
                 agentPrefab = Resources.Load<AgentBehaviour>("Prefabs/Agent");
-                for (int i = 0; i < 2; i++)
+                for (int i = 0; i < 4; i++)
                 {
                     agentPrefab = Instantiate(agentPrefab);
                     agentPrefab.transform.SetParent(agentParent.transform);
                     agentPrefab.transform.position = new Vector3(Random.Range(1, 50), 2, Random.Range(-1, -50));
+                    agentPrefab.team = i % 2;
                     agents.Add(agentPrefab);
                 }
             }
@@ -192,9 +193,76 @@ public class GameManagerBehaviour : MonoBehaviour
         return null;
     }
 
+    public AgentRole GetRole(int team)
+    {
+        int noneCount = 0;
+        int leadCount = 0;
+        int supportCount = 0;
+
+        for (int i = 0; i < agents.Count; i++)
+        {
+            if (agents[i].team == team)
+            {
+                if (agents[i].agentRole == AgentRole.None)
+                {
+                    noneCount++;
+                }
+                else if (agents[i].agentRole == AgentRole.Lead)
+                {
+                    leadCount++;
+                }
+                else if (agents[i].agentRole == AgentRole.Support)
+                {
+                    supportCount++;
+                }
+            } 
+        }
+
+        if(leadCount == supportCount)
+        {
+            return AgentRole.Lead;
+        }
+        else if (leadCount > supportCount)
+        {
+            return AgentRole.Support;
+        }
+        else if (supportCount > leadCount)
+        {
+            return AgentRole.Lead;
+        }
+
+        return AgentRole.None;
+    }
+
     public void SetAgent(AgentBehaviour p_agent)
     {
         balls[0].SetAgent(p_agent);
+    }
+
+    public AgentBehaviour GetNearestEnemyAgent(AgentBehaviour p_agent)
+    {
+        float distance = float.MaxValue;
+        int closestAgentIndex = -1;
+
+        if (agents != null && agents.Count > 0)
+        {
+            for (int i = 0; i < agents.Count; i++)
+            {
+                if (agents[i].team != p_agent.team &&
+                    agents[i] != p_agent)
+                {
+                    if (Vector3.Distance(p_agent.transform.position, agents[i].transform.position) < distance)
+                    {
+                        distance = Vector3.Distance(p_agent.transform.position, agents[i].transform.position);
+                        closestAgentIndex = i;
+                    }
+                }
+            }
+
+            return agents[closestAgentIndex];
+        } 
+
+        return null;
     }
 
     // If vector3zero == not being chased

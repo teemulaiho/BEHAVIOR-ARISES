@@ -13,10 +13,18 @@ public enum AgentState
     Attacking,
     Fallen
 }
+public enum AgentRole
+{
+    None,
+    Lead,
+    Support
+}
+
 public class AgentBehaviour : MonoBehaviour
 {
     public GameManagerBehaviour gameManager;
     public AgentState agentState;
+    public AgentRole agentRole;
     public PowerupState powerupState;
     public MeshRenderer meshRenderer;
     public Rigidbody rigidBody;
@@ -34,13 +42,14 @@ public class AgentBehaviour : MonoBehaviour
     public float agentRecovery;
     public float recoveryTime;
     public int score;
+    public int team;
 
     public Vector3 kickForce;
     public bool colliding;
 
 
     // Agent Behaviour Tree Begin
-    static BT_Node bt_root;
+    public BT_Node bt_root;
     //static Selector bt_root;
     // Agent Behaviour Tree End
 
@@ -51,6 +60,9 @@ public class AgentBehaviour : MonoBehaviour
         this.name = "Agent";
         gameManager = p_gameManager;
         agentState = AgentState.Idle;
+        //agentRole = gameManager.GetRole(team);
+        agentRole = AgentRole.Lead;
+        Debug.Log(agentRole);
         targetBall = null;
         targetAgent = null;
         targetPowerup = gameManager.GetPowerup();
@@ -69,65 +81,101 @@ public class AgentBehaviour : MonoBehaviour
 
         targetBall = gameManager.GetBall();
 
+        //if (team == 0)
+        //{
+        //    meshRenderer.material.color = Color.blue;
+        //}
+        //else if (team == 1)
+        //{
+        //    meshRenderer.material.color = Color.red;
+        //}
 
         // Agent Behaviour Tree Begin  
         if (bt_root == null)
         {
             Selector root = new Selector();     // Temporary root.
 
-            Sequencer DoIHaveBall = new Sequencer();
-            DoIHaveBall.children.Add(new NodeDoIHaveBall());
-            DoIHaveBall.children.Add(new NodeTargetGoal());
-            DoIHaveBall.children.Add(new NodeMoveTowardsTarget());
-            DoIHaveBall.children.Add(new NodeScoreGoal());
+            // Lead Agent Behaviour Tree
+            if (agentRole == AgentRole.Lead)
+            {
+                Debug.Log("I Am A Lead Agent.");
 
+                Sequencer DoIHaveBall = new Sequencer();
+                DoIHaveBall.children.Add(new NodeDoIHaveBall());
+                DoIHaveBall.children.Add(new NodeTargetGoal());
+                DoIHaveBall.children.Add(new NodeMoveTowardsTarget());
+                DoIHaveBall.children.Add(new NodeScoreGoal());
 
-            Sequencer IsPowerupKick = new Sequencer();
-            IsPowerupKick.children.Add(new NodeIsPowerupKick());
-            IsPowerupKick.children.Add(new NodeIsPowerupCloseEnough());
-            IsPowerupKick.children.Add(new NodeTargetPowerup());
-            IsPowerupKick.children.Add(new NodeMoveTowardsTarget());
-            IsPowerupKick.children.Add(new NodeCapturePowerup());
+                Sequencer IsPowerupKick = new Sequencer();
+                IsPowerupKick.children.Add(new NodeIsPowerupKick());
+                IsPowerupKick.children.Add(new NodeIsPowerupCloseEnough());
+                IsPowerupKick.children.Add(new NodeTargetPowerup());
+                IsPowerupKick.children.Add(new NodeMoveTowardsTarget());
+                IsPowerupKick.children.Add(new NodeCapturePowerup());
 
-            Sequencer IsPowerupSpeed = new Sequencer();
-            IsPowerupSpeed.children.Add(new NodeIsPowerupSpeed());
-            IsPowerupSpeed.children.Add(new NodeIsPowerupCloseEnough());
-            IsPowerupSpeed.children.Add(new NodeTargetPowerup());
-            IsPowerupSpeed.children.Add(new NodeMoveTowardsTarget());
-            IsPowerupSpeed.children.Add(new NodeCapturePowerup());
+                Sequencer IsPowerupSpeed = new Sequencer();
+                IsPowerupSpeed.children.Add(new NodeIsPowerupSpeed());
+                IsPowerupSpeed.children.Add(new NodeIsPowerupCloseEnough());
+                IsPowerupSpeed.children.Add(new NodeTargetPowerup());
+                IsPowerupSpeed.children.Add(new NodeMoveTowardsTarget());
+                IsPowerupSpeed.children.Add(new NodeCapturePowerup());
 
-            Sequencer DoesSomeoneElseHaveBall = new Sequencer();
-            DoesSomeoneElseHaveBall.children.Add(new NodeIsBallCloseEnough());
-            DoesSomeoneElseHaveBall.children.Add(new NodeDoesSomeoneElseHaveBall());
-            DoesSomeoneElseHaveBall.children.Add(new NodeTargetAgent());
-            DoesSomeoneElseHaveBall.children.Add(new NodeMoveTowardsTarget());
-            DoesSomeoneElseHaveBall.children.Add(new NodeKickAgent());
+                Sequencer DoesSomeoneElseHaveBall = new Sequencer();
+                DoesSomeoneElseHaveBall.children.Add(new NodeIsBallCloseEnough());
+                DoesSomeoneElseHaveBall.children.Add(new NodeDoesSomeoneElseHaveBall());
+                DoesSomeoneElseHaveBall.children.Add(new NodeTargetAgent());
+                DoesSomeoneElseHaveBall.children.Add(new NodeMoveTowardsTarget());
+                DoesSomeoneElseHaveBall.children.Add(new NodeKickAgent());
 
-            Sequencer IsBallFree = new Sequencer();
-            IsBallFree.children.Add(new NodeIsBallCloseEnough());
-            IsBallFree.children.Add(new NodeIsBallFree());
-            IsBallFree.children.Add(new NodeTargetBall());
-            IsBallFree.children.Add(new NodeMoveTowardsTarget());
-            IsBallFree.children.Add(new NodeCaptureBall());
+                Sequencer IsBallFree = new Sequencer();
+                IsBallFree.children.Add(new NodeIsBallCloseEnough());
+                IsBallFree.children.Add(new NodeIsBallFree());
+                IsBallFree.children.Add(new NodeTargetBall());
+                IsBallFree.children.Add(new NodeMoveTowardsTarget());
+                IsBallFree.children.Add(new NodeCaptureBall());
 
-            Selector IsBallNearby = new Selector();
-            //IsBallNearby.children.Add(new NodeIsBallCloseEnough());
-            IsBallNearby.children.Add(DoIHaveBall);
-            IsBallNearby.children.Add(DoesSomeoneElseHaveBall);
-            IsBallNearby.children.Add(IsBallFree);
-            //IsBallFree.children.Add(IsPowerUpNearby);
+                Selector BallBranch = new Selector();
+                BallBranch.children.Add(DoIHaveBall);
+                BallBranch.children.Add(DoesSomeoneElseHaveBall);
+                BallBranch.children.Add(IsBallFree);
 
+                Selector PowerupBranch = new Selector();
+                PowerupBranch.children.Add(IsPowerupSpeed);
+                PowerupBranch.children.Add(IsPowerupKick);
 
-            Selector IsPowerupNearby = new Selector();
-            IsPowerupNearby.children.Add(IsPowerupSpeed);
-            IsPowerupNearby.children.Add(IsPowerupKick);
+                root.children.Add(BallBranch);
+                root.children.Add(PowerupBranch);
+            }
 
+            // Support Agent Behaviour Tree
+            else if (agentRole == AgentRole.Support)
+            {
+                Debug.Log("I am a Support Agent.");
+                
+                Sequencer DoesMyTeamHaveBall = new Sequencer();
+                DoesMyTeamHaveBall.children.Add(new NodeDoesMyTeamHaveBall());
+                DoesMyTeamHaveBall.children.Add(new NodeIsEnemyTeamAgentCloseEnough());
+                DoesMyTeamHaveBall.children.Add(new NodeTargetAgent());
+                DoesMyTeamHaveBall.children.Add(new NodeMoveTowardsTarget());
 
-            //root.children.Add(DoIHaveBall);
-            root.children.Add(IsBallNearby);
-            root.children.Add(IsPowerupNearby);
-            //root.children.Add(DoesSomeoneElseHaveBall);
-            //root.children.Add(IsBallFree);
+                Inverter InvertNearbyEnemyResult = new Inverter();
+                InvertNearbyEnemyResult.children.Add(new NodeIsEnemyTeamAgentCloseEnough());
+
+                Sequencer AttackNearbyEnemyAgent = new Sequencer();
+                AttackNearbyEnemyAgent.children.Add(new NodeDoesMyTeamHaveBall());
+                AttackNearbyEnemyAgent.children.Add(InvertNearbyEnemyResult);
+                AttackNearbyEnemyAgent.children.Add(new NodeMoveTowardsTarget());
+                AttackNearbyEnemyAgent.children.Add(new NodeKickAgent());
+
+                Selector defenceBranch = new Selector();
+                defenceBranch.children.Add(DoesMyTeamHaveBall);
+                defenceBranch.children.Add(AttackNearbyEnemyAgent);
+
+                root.children.Add(defenceBranch);
+            }
+
+            // Offense Agent
+
             bt_root = root;
         }
         // Agent Behaviour Tree End
