@@ -20,22 +20,33 @@ public class Selector : BT_Node // Choose reaction.
 
     public override ReturnState Run(AgentBehaviour agent)
     {
-        bool running = false;
+        //bool running = false;
 
         for (int i = 0; i < children.Count; i++)
         {
             ReturnState state = children[i].Run(agent);
 
-            if (state == ReturnState.SUCCESS)
+            if (state != ReturnState.FAILURE)
+            {
                 return state;
-            if (state == ReturnState.RUNNING)
-                running = true;
+            }
+
+            //if (state == ReturnState.SUCCESS)
+            //{
+            //    return state;
+            //}
+            //else if (state == ReturnState.RUNNING)
+            //{
+            //    //running = true;
+            //    return state;
+            //}
+              
         }
 
-        if (running)
-        {
-            return ReturnState.RUNNING;
-        }
+        //if (running)
+        //{
+        //    return ReturnState.RUNNING;
+        //}
 
         return ReturnState.FAILURE;
         // run all children stop if condition of return
@@ -52,13 +63,9 @@ public class Sequencer : BT_Node // Run reaction steps.
         {
             ReturnState state = children[i].Run(agent);
 
-            if (state == ReturnState.FAILURE)
+            if (state != ReturnState.SUCCESS)
             {
-                return ReturnState.FAILURE;
-            }
-            if (state == ReturnState.RUNNING)
-            {
-                return ReturnState.RUNNING;
+                return state;
             }
         }
 
