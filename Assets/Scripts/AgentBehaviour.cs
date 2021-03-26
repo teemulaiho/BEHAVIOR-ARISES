@@ -17,6 +17,7 @@ public class AgentBehaviour : MonoBehaviour
 {
     public GameManagerBehaviour gameManager;
     public AgentState agentState;
+    public PowerupState powerupState;
     public MeshRenderer meshRenderer;
     public Rigidbody rigidBody;
     public Collider agentCollider;
@@ -310,6 +311,20 @@ public class AgentBehaviour : MonoBehaviour
         agentCollision = null;
     }
 
+    //private void OnTriggerEnter(Collider other)
+    //{
+    //    agentCollider = other;
+
+    //    if (other.gameObject.CompareTag("Powerup"))
+    //    {
+    //        if (targetAgent != null)
+    //        {
+    //            if (other == targetAgent.agentCollider)
+    //                colliding = true;
+    //        }
+    //    }
+    //}
+
     public void AddScore()
     {
         score++;
@@ -333,6 +348,28 @@ public class AgentBehaviour : MonoBehaviour
     {
         if (targetAgent != null)
             targetAgent = null;
+    }
+   
+    public void RemoveTargetPowerup()
+    {
+        if (targetPowerup != null)
+            targetPowerup = null;
+    }
+
+    public void AgentPowerup(PowerupBehaviour powerup)
+    {
+        if (powerup.state == PowerupState.Speed)
+        {
+            agentSpeed *= 2f;
+        }
+        else if (powerup.state == PowerupState.Kick)
+        {
+            kickForce *= 2f;
+        }
+        else
+        {
+
+        }
     }
 
     //// Start is called before the first frame update

@@ -37,7 +37,7 @@ public class GameManagerBehaviour : MonoBehaviour
             {
                 GameObject agentParent = new GameObject("AGENTS");
                 agentPrefab = Resources.Load<AgentBehaviour>("Prefabs/Agent");
-                for (int i = 0; i < 1; i++)
+                for (int i = 0; i < 2; i++)
                 {
                     agentPrefab = Instantiate(agentPrefab);
                     agentPrefab.transform.SetParent(agentParent.transform);

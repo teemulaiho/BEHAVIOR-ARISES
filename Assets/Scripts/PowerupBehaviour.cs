@@ -5,7 +5,8 @@ using UnityEngine;
 public enum PowerupState
 {
     Speed,
-    Kick
+    Kick,
+    // Pull
 }
 
 public class PowerupBehaviour : MonoBehaviour
@@ -39,5 +40,11 @@ public class PowerupBehaviour : MonoBehaviour
         {
             meshRenderer.material.color = Color.Lerp(Color.magenta, Color.black, Mathf.PingPong(Time.time, 1));
         }
+    }
+
+    public void ResetPowerup()
+    {
+        transform.position = new Vector3(Random.Range(1, 49), 3, Random.Range(-1, -49));
+        state = (PowerupState)Random.Range(0, 2);
     }
 }

@@ -18,6 +18,7 @@ public class BallBehaviour : MonoBehaviour
     public Vector3 fleefrom;
     public Vector3 newPos;
     public float speed = 2.5f;
+    public float defaultSpeed = 2.5f;
 
     public void Init(GameManagerBehaviour p_gameManger)
     {
@@ -80,7 +81,11 @@ public class BallBehaviour : MonoBehaviour
     public void SetAgent(AgentBehaviour p_agent)
     {
         if(agent != p_agent)
+        {
             agent = p_agent;
+            speed = p_agent.agentSpeed;
+        }
+   
     }
 
     public bool RemoveAgent(AgentBehaviour p_agent)
@@ -122,6 +127,7 @@ public class BallBehaviour : MonoBehaviour
     public void ResetBall()
     {
         transform.position = new Vector3(Random.Range(1, 49), 3, Random.Range(-1, -49));
+        speed = defaultSpeed;
         ballState = BallState.Free;
         //gameManager.Goal(this, agent);
     }

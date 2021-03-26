@@ -73,18 +73,6 @@ public class Sequencer : BT_Node // Run reaction steps.
     }
 }
 
-// Filippo's Shenanigans
-//public class Composite : BT_Node
-//{
-
-//}
-
-
-//public class Node : BT_Node
-//{
-
-//}
-
 public class NodePrint : BT_Node
 {
     private string text = "";
@@ -245,6 +233,9 @@ public class NodeCapturePowerup : BT_Node
         {
             if (agent.agentCollision.collider.CompareTag("Powerup"))
             {
+                agent.AgentPowerup(agent.targetPowerup);
+                agent.targetPowerup.ResetPowerup();
+                //agent.RemoveTargetPowerup();
                 Debug.Log("Collided with powerup.");
                 return ReturnState.SUCCESS;
             }
@@ -277,7 +268,7 @@ public class NodeKickAgent : BT_Node
     {
         if (agent.colliding)
         {
-            Debug.Log("Reahed agent, proceed to kick.");
+            Debug.Log("Reached agent, proceed to kick.");
             agent.targetAgent.rigidBody.AddExplosionForce(2000f, agent.transform.position, 10f);
             agent.targetAgent.targetBall.RemoveAgent(agent.targetAgent);
             agent.targetAgent.RemoveBall();
@@ -327,12 +318,16 @@ public class NodeIsPowerupCloseEnough : BT_Node
         return ReturnState.SUCCESS;
     }
 }
+
 public class NodeIsPowerupSpeed : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
     {
-        if (agent.targetPowerup.state.ToString() == "Speed")
-            return ReturnState.SUCCESS;
+        if (agent.targetPowerup != null)
+        {
+            if (agent.targetPowerup.state.ToString() == "Speed")
+                return ReturnState.SUCCESS;
+        }
 
         return ReturnState.FAILURE;
     }
@@ -342,8 +337,11 @@ public class NodeIsPowerupKick : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
     {
-        if (agent.targetPowerup.state.ToString() == "Kick")
-            return ReturnState.SUCCESS;
+        if (agent.targetPowerup != null)
+        {
+            if (agent.targetPowerup.state.ToString() == "Kick")
+                return ReturnState.SUCCESS;
+        }
 
         return ReturnState.FAILURE;
     }
