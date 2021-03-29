@@ -293,6 +293,7 @@ public class NodeKickAgent : BT_Node
         {
             Debug.Log("Reached agent, proceed to kick.");
             agent.targetAgent.rigidBody.AddExplosionForce(2000f, agent.transform.position, 10f);
+            agent.targetAgent.AgentTakeDamage(agent.kickForce.x);
             agent.targetAgent.targetBall.RemoveAgent(agent.targetAgent);
             agent.targetAgent.RemoveBall();
             agent.RemoveTargetAgent();

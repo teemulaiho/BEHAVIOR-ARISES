@@ -17,7 +17,8 @@ public enum AgentRole
 {
     None,
     Lead,
-    Support
+    Support,
+    Healer
 }
 
 public class AgentBehaviour : MonoBehaviour
@@ -31,6 +32,8 @@ public class AgentBehaviour : MonoBehaviour
     public Collider agentCollider;
     public Collision agentCollision;
 
+    public HealthbarBehaviour healthBar;
+
     public GoalBehaviour targetGoal;
     public BallBehaviour targetBall;
     public AgentBehaviour targetAgent;
@@ -40,6 +43,8 @@ public class AgentBehaviour : MonoBehaviour
     public Quaternion originalRotation;
     public float agentSpeed;
     public float agentRecovery;
+    public float agentMaxHealth;
+    public float agentCurrentHealth;
     public float recoveryTime;
     public int score;
     public int team;
@@ -68,6 +73,9 @@ public class AgentBehaviour : MonoBehaviour
         targetPowerup = gameManager.GetPowerup();
         agentSpeed = 2.5f;
         agentRecovery = 2f;
+        agentMaxHealth = 1000f;
+        agentCurrentHealth = agentMaxHealth;
+        healthBar.SetMaxHealth(agentMaxHealth);
         recoveryTime = 0;
         targetGoal = gameManager.GetGoal(this);
         meshRenderer = GetComponent<MeshRenderer>();
@@ -174,7 +182,11 @@ public class AgentBehaviour : MonoBehaviour
                 root.children.Add(defenceBranch);
             }
 
-            // Offense Agent
+            // Healer Agent
+            else if (agentRole == AgentRole.Healer)
+            {
+                Debug.Log("I am a Healer Agent.");
+            }
 
             bt_root = root;
         }
@@ -183,6 +195,11 @@ public class AgentBehaviour : MonoBehaviour
 
     public void AgentUpdate()
     {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            AgentTakeDamage(20);
+        }
+
         if (transform.position.y < -10 ||
             transform.position.x > 50 ||
             transform.position.x < 0 ||
@@ -418,6 +435,12 @@ public class AgentBehaviour : MonoBehaviour
         {
 
         }
+    }
+
+    public void AgentTakeDamage(float damage)
+    {
+        agentCurrentHealth -= damage;
+        healthBar.SetHealth(agentCurrentHealth);
     }
 
     //// Start is called before the first frame update
