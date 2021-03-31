@@ -83,10 +83,12 @@ public class Inverter : BT_Node
 
             if (state != ReturnState.SUCCESS)
             {
+                Debug.Log("Inverting state: " + state + " to " + ReturnState.SUCCESS);
                 return ReturnState.SUCCESS;
             }
         }
 
+        Debug.Log("Inverting state: " + "Success" + " to " + ReturnState.FAILURE);
         return ReturnState.FAILURE;
     }
     }
@@ -101,6 +103,62 @@ public class NodePrint : BT_Node
     {
         Debug.Log(text);
         return ReturnState.SUCCESS;
+    }
+}
+
+// Generic Behaviour
+public class NodeCheckHealthAbove25Percent : BT_Node
+{
+    public override ReturnState Run(AgentBehaviour agent)
+    {
+        if (agent.agentCurrentHealth / agent.agentMaxHealth > 0.25f)
+        {
+            return ReturnState.SUCCESS;
+        }
+
+        return ReturnState.FAILURE;
+    }
+}
+public class NodeCheckHealthAbove50Percent : BT_Node
+{
+    public override ReturnState Run(AgentBehaviour agent)
+    {
+        if (agent.agentCurrentHealth / agent.agentMaxHealth > 0.5f)
+        {
+            return ReturnState.SUCCESS;
+        }
+
+        return ReturnState.FAILURE;
+    }
+}
+public class NodeTargetHealthPotion : BT_Node
+{
+    public override ReturnState Run(AgentBehaviour agent)
+    {
+        return ReturnState.FAILURE;
+    }
+}
+public class NodeTargetSafeArea : BT_Node
+{
+    public override ReturnState Run(AgentBehaviour agent)
+    {
+        agent.targetPos = agent.safePos;
+        return ReturnState.SUCCESS;
+    }
+}
+
+public class NodeHealAgent : BT_Node
+{
+    public override ReturnState Run(AgentBehaviour agent)
+    {
+
+        if (agent.agentCurrentHealth < agent.agentMaxHealth * 0.50f)
+        {
+            agent.agentCurrentHealth++;
+            return ReturnState.RUNNING;
+        }
+        else
+            return ReturnState.SUCCESS;
     }
 }
 
@@ -331,7 +389,7 @@ public class NodeIsPowerupCloseEnough : BT_Node
         {
             float timeToPowerUp = Vector3.Distance(agent.transform.position, agent.targetPowerup.transform.position) / agent.agentSpeed;
 
-            if (timeToPowerUp > 10)
+            if (timeToPowerUp > 20)
             {
                 Debug.Log("Powerup is to far away from me.");
                 return ReturnState.FAILURE;

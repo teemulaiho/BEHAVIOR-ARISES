@@ -40,6 +40,7 @@ public class AgentBehaviour : MonoBehaviour
     public PowerupBehaviour targetPowerup;
 
     public Vector3 targetPos;
+    public Vector3 safePos;
     public Quaternion originalRotation;
     public float agentSpeed;
     public float agentRecovery;
@@ -88,6 +89,7 @@ public class AgentBehaviour : MonoBehaviour
         kickForce = new Vector3(50, 0, 50);
 
         targetBall = gameManager.GetBall();
+        safePos = new Vector3(25, 15, -25);
 
         //if (team == 0)
         //{
@@ -107,6 +109,15 @@ public class AgentBehaviour : MonoBehaviour
             if (agentRole == AgentRole.Lead)
             {
                 Debug.Log("I Am A Lead Agent.");
+
+                Inverter HealthAbove25PercentInverter = new Inverter();
+                HealthAbove25PercentInverter.children.Add(new NodeCheckHealthAbove25Percent());
+
+                Sequencer IsMyHealthBelow25Percent = new Sequencer();
+                IsMyHealthBelow25Percent.children.Add(HealthAbove25PercentInverter);
+                IsMyHealthBelow25Percent.children.Add(new NodeTargetSafeArea());
+                IsMyHealthBelow25Percent.children.Add(new NodeMoveTowardsTarget());
+                IsMyHealthBelow25Percent.children.Add(new NodeHealAgent());
 
                 Sequencer DoIHaveBall = new Sequencer();
                 DoIHaveBall.children.Add(new NodeDoIHaveBall());
@@ -142,6 +153,9 @@ public class AgentBehaviour : MonoBehaviour
                 IsBallFree.children.Add(new NodeMoveTowardsTarget());
                 IsBallFree.children.Add(new NodeCaptureBall());
 
+                Selector HealthBranch = new Selector();
+                HealthBranch.children.Add(IsMyHealthBelow25Percent);
+
                 Selector BallBranch = new Selector();
                 BallBranch.children.Add(DoIHaveBall);
                 BallBranch.children.Add(DoesSomeoneElseHaveBall);
@@ -151,6 +165,7 @@ public class AgentBehaviour : MonoBehaviour
                 PowerupBranch.children.Add(IsPowerupSpeed);
                 PowerupBranch.children.Add(IsPowerupKick);
 
+                root.children.Add(IsMyHealthBelow25Percent);
                 root.children.Add(BallBranch);
                 root.children.Add(PowerupBranch);
             }
