@@ -51,6 +51,7 @@ public class AgentBehaviour : MonoBehaviour
     public int team;
 
     public Vector3 kickForce;
+    public Vector3 agentScale;
     public bool colliding;
 
 
@@ -61,14 +62,14 @@ public class AgentBehaviour : MonoBehaviour
 
     public void Init(GameManagerBehaviour p_gameManager)
     {
-        Debug.Log("Init AgentBehaviour.");
+        //Debug.Log("Init AgentBehaviour.");
 
         this.name = "Agent";
         gameManager = p_gameManager;
         agentState = AgentState.Idle;
         //agentRole = gameManager.GetRole(team);
         agentRole = AgentRole.Lead;
-        Debug.Log(agentRole);
+        //Debug.Log(agentRole);
         targetBall = null;
         targetAgent = null;
         targetPowerup = gameManager.GetPowerup();
@@ -87,6 +88,7 @@ public class AgentBehaviour : MonoBehaviour
         colliding = false;
 
         kickForce = new Vector3(50, 0, 50);
+        agentScale = new Vector3(1, 1, 1);
 
         targetBall = gameManager.GetBall();
         safePos = new Vector3(25, 15, -25);
@@ -113,11 +115,14 @@ public class AgentBehaviour : MonoBehaviour
                 Inverter HealthAbove25PercentInverter = new Inverter();
                 HealthAbove25PercentInverter.children.Add(new NodeCheckHealthAbove25Percent());
 
-                Sequencer IsMyHealthBelow25Percent = new Sequencer();
-                IsMyHealthBelow25Percent.children.Add(HealthAbove25PercentInverter);
-                IsMyHealthBelow25Percent.children.Add(new NodeTargetSafeArea());
-                IsMyHealthBelow25Percent.children.Add(new NodeMoveTowardsTarget());
-                IsMyHealthBelow25Percent.children.Add(new NodeHealAgent());
+                Inverter inverter = new Inverter();
+                inverter.children.Add(new NodeCheckHealthAbove50Percent());
+
+                Sequencer IsMyHealthBelow50Percent = new Sequencer();
+                IsMyHealthBelow50Percent.children.Add(inverter);
+                IsMyHealthBelow50Percent.children.Add(new NodeTargetSafeArea());
+                IsMyHealthBelow50Percent.children.Add(new NodeMoveTowardsTarget());
+                IsMyHealthBelow50Percent.children.Add(new NodeHealAgent());
 
                 Sequencer DoIHaveBall = new Sequencer();
                 DoIHaveBall.children.Add(new NodeDoIHaveBall());
@@ -154,7 +159,7 @@ public class AgentBehaviour : MonoBehaviour
                 IsBallFree.children.Add(new NodeCaptureBall());
 
                 Selector HealthBranch = new Selector();
-                HealthBranch.children.Add(IsMyHealthBelow25Percent);
+                HealthBranch.children.Add(IsMyHealthBelow50Percent);
 
                 Selector BallBranch = new Selector();
                 BallBranch.children.Add(DoIHaveBall);
@@ -165,7 +170,7 @@ public class AgentBehaviour : MonoBehaviour
                 PowerupBranch.children.Add(IsPowerupSpeed);
                 PowerupBranch.children.Add(IsPowerupKick);
 
-                root.children.Add(IsMyHealthBelow25Percent);
+                root.children.Add(IsMyHealthBelow50Percent);
                 root.children.Add(BallBranch);
                 root.children.Add(PowerupBranch);
             }
@@ -408,7 +413,7 @@ public class AgentBehaviour : MonoBehaviour
     public void AddScore()
     {
         score++;
-        Debug.Log("Agent " + meshRenderer.material.color.ToString() + " Score: " + score);
+        //Debug.Log("Agent " + meshRenderer.material.color.ToString() + " Score: " + score);
     }
 
     public void RemoveBall()
@@ -445,6 +450,7 @@ public class AgentBehaviour : MonoBehaviour
         else if (powerup.state == PowerupState.Kick)
         {
             kickForce *= 2f;
+            transform.localScale = kickForce.x / 50 * agentScale;
         }
         else
         {

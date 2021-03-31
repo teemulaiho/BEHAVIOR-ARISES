@@ -106,7 +106,7 @@ public class BallBehaviour : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Goal"))
         {
-            Debug.Log("GOOOOOOOOOOOOOOOOALLL!");
+            //Debug.Log("GOOOOOOOOOOOOOOOOALLL!");
         }
     }
 
@@ -116,7 +116,7 @@ public class BallBehaviour : MonoBehaviour
         {
             if (other.gameObject.CompareTag("Goal"))
             {
-                Debug.Log("GOOOOOOOOOOOOOOOOALLL!");
+                //Debug.Log("GOOOOOOOOOOOOOOOOALLL!");
                 agent.AddScore();
                 RemoveAgent(agent);
                 ResetBall();

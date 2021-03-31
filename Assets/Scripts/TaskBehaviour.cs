@@ -83,12 +83,12 @@ public class Inverter : BT_Node
 
             if (state != ReturnState.SUCCESS)
             {
-                Debug.Log("Inverting state: " + state + " to " + ReturnState.SUCCESS);
+                //Debug.Log("Inverting state: " + state + " to " + ReturnState.SUCCESS);
                 return ReturnState.SUCCESS;
             }
         }
 
-        Debug.Log("Inverting state: " + "Success" + " to " + ReturnState.FAILURE);
+        //Debug.Log("Inverting state: " + "Success" + " to " + ReturnState.FAILURE);
         return ReturnState.FAILURE;
     }
     }
@@ -101,7 +101,7 @@ public class NodePrint : BT_Node
     }
     public override ReturnState Run(AgentBehaviour agent)
     {
-        Debug.Log(text);
+        //Debug.Log(text);
         return ReturnState.SUCCESS;
     }
 }
@@ -146,15 +146,15 @@ public class NodeTargetSafeArea : BT_Node
         return ReturnState.SUCCESS;
     }
 }
-
 public class NodeHealAgent : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
     {
 
-        if (agent.agentCurrentHealth < agent.agentMaxHealth * 0.50f)
+        if (agent.agentCurrentHealth < agent.agentMaxHealth)
         {
             agent.agentCurrentHealth++;
+            agent.healthBar.SetHealth(agent.agentCurrentHealth);
             return ReturnState.RUNNING;
         }
         else
@@ -233,7 +233,7 @@ public class NodeTargetBall : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
     {
-        Debug.Log("Targeting Ball.");
+       // Debug.Log("Targeting Ball.");
         agent.targetPos = agent.targetBall.transform.position;
         return ReturnState.SUCCESS;
     }
@@ -247,7 +247,7 @@ public class NodeTargetAgent : BT_Node
             if (agent.targetBall.agent != null &&
                 agent.targetBall.agent != agent)
             {
-                Debug.Log("Targeting agent who has ball.");
+                //Debug.Log("Targeting agent who has ball.");
                 agent.targetPos = agent.targetBall.agent.transform.position;
                 agent.targetAgent = agent.targetBall.agent;
                 return ReturnState.SUCCESS;
@@ -257,7 +257,7 @@ public class NodeTargetAgent : BT_Node
         {
             if (agent.targetAgent == agent)
             {
-                Debug.Log("Targeting agent who is chasing my teammate with ball.");
+                //Debug.Log("Targeting agent who is chasing my teammate with ball.");
                 agent.targetPos = agent.targetAgent.transform.position;
                 return ReturnState.SUCCESS;
             }
@@ -270,7 +270,7 @@ public class NodeTargetGoal : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
     {
-        Debug.Log("Targeting Goal.");
+        //Debug.Log("Targeting Goal.");
         agent.targetPos = agent.targetGoal.transform.position;
         return ReturnState.SUCCESS;
     }
@@ -281,7 +281,7 @@ public class NodeTargetPowerup : BT_Node
     {
         if (agent.targetPowerup != null)
         {
-            Debug.Log("Targeting Powerup: " + agent.targetPowerup.state);
+            //Debug.Log("Targeting Powerup: " + agent.targetPowerup.state);
             agent.targetPos = agent.targetPowerup.transform.position;
             return ReturnState.SUCCESS;
         }
@@ -301,7 +301,7 @@ public class NodeCaptureBall : BT_Node
         }
         else
         {
-            Debug.Log("Could not capture, distance to ball is: " + Vector3.Distance(agent.transform.position, agent.targetBall.transform.position));
+            //Debug.Log("Could not capture, distance to ball is: " + Vector3.Distance(agent.transform.position, agent.targetBall.transform.position));
             return ReturnState.FAILURE;
         }           
     }
@@ -317,12 +317,12 @@ public class NodeCapturePowerup : BT_Node
                 agent.AgentPowerup(agent.targetPowerup);
                 agent.targetPowerup.ResetPowerup();
                 //agent.RemoveTargetPowerup();
-                Debug.Log("Collided with powerup.");
+                //Debug.Log("Collided with powerup.");
                 return ReturnState.SUCCESS;
             }
         }
 
-        Debug.Log("Powerup too for away for collision.");
+        //Debug.Log("Powerup too for away for collision.");
         return ReturnState.FAILURE;
     }
 }
@@ -332,7 +332,7 @@ public class NodeScoreGoal : BT_Node
     {
         if (Vector3.Distance(agent.transform.position, agent.targetGoal.transform.position) < 0.02)
         {
-            Debug.Log("Agent:" + agent.name + " scored goal!");
+            //Debug.Log("Agent:" + agent.name + " scored goal!");
             //agent.targetBall.ResetBall();
             return ReturnState.SUCCESS;
         }
@@ -349,7 +349,7 @@ public class NodeKickAgent : BT_Node
     {
         if (agent.colliding)
         {
-            Debug.Log("Reached agent, proceed to kick.");
+            //Debug.Log("Reached agent, proceed to kick.");
             agent.targetAgent.rigidBody.AddExplosionForce(2000f, agent.transform.position, 10f);
             agent.targetAgent.AgentTakeDamage(agent.kickForce.x);
             agent.targetAgent.targetBall.RemoveAgent(agent.targetAgent);
@@ -369,11 +369,11 @@ public class NodeIsBallCloseEnough: BT_Node
 
         if (timeToBall > 10)
         {
-            Debug.Log("Ball is too far away from me.");
+            //Debug.Log("Ball is too far away from me.");
             return ReturnState.FAILURE;
         }
 
-        Debug.Log("Ball is close enough.");
+        //Debug.Log("Ball is close enough.");
         return ReturnState.SUCCESS;
     }
 }
@@ -391,12 +391,12 @@ public class NodeIsPowerupCloseEnough : BT_Node
 
             if (timeToPowerUp > 20)
             {
-                Debug.Log("Powerup is to far away from me.");
+                //Debug.Log("Powerup is to far away from me.");
                 return ReturnState.FAILURE;
             }
         }
 
-        Debug.Log("Powerup is close enough.");
+        //Debug.Log("Powerup is close enough.");
         return ReturnState.SUCCESS;
     }
 }
@@ -438,7 +438,7 @@ public class NodeDoesMyTeamHaveBall : BT_Node
         {
             if (agent.targetBall.agent.team == agent.team)
             {
-                Debug.Log("My team: " + agent.team + " has the ball.");
+                //Debug.Log("My team: " + agent.team + " has the ball.");
                 return ReturnState.SUCCESS;
             }
         }
@@ -456,7 +456,7 @@ public class NodeIsEnemyTeamAgentCloseEnough : BT_Node
 
         if (timeToTarget < 5)
         {
-            Debug.Log("Enemy Agent is close enough.");
+            //Debug.Log("Enemy Agent is close enough.");
             agent.targetAgent = nearestEnemyAgent;
             return ReturnState.FAILURE;
         }

@@ -331,14 +331,17 @@ public class GameManagerBehaviour : MonoBehaviour
     {
         if (captureInfo.ContainsKey(agent))
         {
-            Debug.Log("GameManagerBehavior.cs - captureInfo contains. Agent: " + agent.meshRenderer.material.color); 
+            //Debug.Log("GameManagerBehavior.cs - captureInfo contains. Agent: " + agent.meshRenderer.material.color); 
             if (captureInfo.Remove(agent))
             {
-                Debug.Log("GameManagerBehavior.cs - Successfully removed agent: " + agent.meshRenderer.material.color + " from captureInfo.");
+                //Debug.Log("GameManagerBehavior.cs - Successfully removed agent: " + agent.meshRenderer.material.color + " from captureInfo.");
             }
         }
         else
-            Debug.Log("GameManagerBehavior.cs - Cannot find agent: " + agent.meshRenderer.material.color + " from captureInfo.");
+        {
+
+            //Debug.Log("GameManagerBehavior.cs - Cannot find agent: " + agent.meshRenderer.material.color + " from captureInfo.");
+        }
     }
 
     public void Goal(BallBehaviour ball, AgentBehaviour agent)
