@@ -8,6 +8,7 @@ TagManager:
   - Ball
   - Goal
   - Powerup
+  - SafePoint
   layers:
   - Default
   - TransparentFX

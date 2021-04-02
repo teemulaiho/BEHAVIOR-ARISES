@@ -6,24 +6,28 @@ public class GameManagerBehaviour : MonoBehaviour
 {
     [SerializeField] Canvas screenUI;
 
-    public HealthbarBehaviour healthbar0;
-    public HealthbarBehaviour healthbar1;
+    public HealthbarBehaviour[] healthBars;
     
     AgentBehaviour agentPrefab;
     BallBehaviour ballPrefab;
     GoalBehaviour goalPrefab;
     PowerupBehaviour powerupPrefab;
     CubeBehaviour cubePrefab;
+    GameObject safepointPrefab;
 
     List<AgentBehaviour> agents = new List<AgentBehaviour>();
     List<BallBehaviour> balls = new List<BallBehaviour>();
     List<GoalBehaviour> goals = new List<GoalBehaviour>();
     List<PowerupBehaviour> powerups = new List<PowerupBehaviour>();
     List<CubeBehaviour> cubes = new List<CubeBehaviour>();
+    List<GameObject> safepoints = new List<GameObject>();
 
     public Dictionary<AgentBehaviour, BallBehaviour> chaseInfo = new Dictionary<AgentBehaviour, BallBehaviour>();
     public Dictionary<AgentBehaviour, BallBehaviour> captureInfo = new Dictionary<AgentBehaviour, BallBehaviour>();
     public Dictionary<AgentBehaviour, GoalBehaviour> goalInfo = new Dictionary<AgentBehaviour, GoalBehaviour>();
+
+    int agentAmount = 4;
+
 
     // Is Called Before Start()
     private void Awake()
@@ -42,7 +46,7 @@ public class GameManagerBehaviour : MonoBehaviour
             {
                 GameObject agentParent = new GameObject("AGENTS");
                 agentPrefab = Resources.Load<AgentBehaviour>("Prefabs/Agent");
-                for (int i = 0; i < 2; i++)
+                for (int i = 0; i < agentAmount; i++)
                 {
                     agentPrefab = Instantiate(agentPrefab);
                     agentPrefab.transform.SetParent(agentParent.transform);
@@ -95,6 +99,13 @@ public class GameManagerBehaviour : MonoBehaviour
                     cubes.Add(cubePrefab);
                 }
             }
+
+            // Safe Point Instantiate
+            {
+                safepointPrefab = Resources.Load<GameObject>("Prefabs/SafePoint");
+                safepointPrefab = Instantiate(safepointPrefab);
+                safepoints.Add(safepointPrefab);
+            }
         }
 
         // Initialize GameObjects
@@ -141,12 +152,13 @@ public class GameManagerBehaviour : MonoBehaviour
 
         // Initialize Screen UI
         {
-            agents[0].healthBar = healthbar0;
-            agents[0].healthBar.SetMaxHealth(agents[0].agentMaxHealth);
-            agents[0].AgentTakeDamage(-1f);
-            agents[1].healthBar = healthbar1;
-            agents[1].healthBar.SetMaxHealth(agents[1].agentMaxHealth);
-            agents[1].AgentTakeDamage(-1f);
+            // Initialize Health bars
+            {
+                for (int i = 0; i < agents.Count; i++)
+                {
+                    healthBars[i].SetMaxHealth(agents[i].agentMaxHealth);
+                }
+            }
         }
     }
 
@@ -166,6 +178,14 @@ public class GameManagerBehaviour : MonoBehaviour
         for (int i = 0; i < powerups.Count; i++)
         {
             powerups[i].PowerupUpdate();
+        }
+
+        // Update Health bars
+        {
+            for (int i = 0; i < agents.Count; i++)
+            {
+                healthBars[i].SetHealth(agents[i].agentCurrentHealth);
+            }
         }
 
         //for (int i = 0; i < cubes.Count; i++)
@@ -372,5 +392,13 @@ public class GameManagerBehaviour : MonoBehaviour
     public GoalBehaviour GetGoal(AgentBehaviour agent)
     {
         return goalInfo[agent];
+    }
+
+    public GameObject GetSafePoint()
+    {
+        if (safepoints.Count > 0)
+            return safepoints[0];
+
+        return null;
     }
 }

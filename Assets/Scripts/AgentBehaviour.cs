@@ -38,6 +38,7 @@ public class AgentBehaviour : MonoBehaviour
     public BallBehaviour targetBall;
     public AgentBehaviour targetAgent;
     public PowerupBehaviour targetPowerup;
+    public GameObject targetSafePoint;
 
     public Vector3 targetPos;
     public Vector3 safePos;
@@ -56,7 +57,7 @@ public class AgentBehaviour : MonoBehaviour
     public bool collidingWithBall;
     public bool collidingWithPowerup;
     public bool collidingWithAgent;
-
+    public bool collidingWithSafePoint;
 
     // Agent Behaviour Tree Begin
     public BT_Node bt_root;
@@ -97,7 +98,8 @@ public class AgentBehaviour : MonoBehaviour
         agentScale = new Vector3(1, 1, 1);
 
         targetBall = gameManager.GetBall();
-        safePos = new Vector3(25, 15, -25);
+        targetSafePoint = gameManager.GetSafePoint();
+        safePos = targetSafePoint.transform.position;
 
         //if (team == 0)
         //{
@@ -423,6 +425,19 @@ public class AgentBehaviour : MonoBehaviour
 
         if (collidingWithAgent)
             collidingWithAgent = false;
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        if (other.gameObject.CompareTag("SafePoint"))
+        {
+            collidingWithSafePoint = true;
+        }
+    }
+    private void OnTriggerExit(Collider other)
+    {
+        if (collidingWithSafePoint)
+            collidingWithSafePoint = false;
     }
 
     //private void OnTriggerEnter(Collider other)

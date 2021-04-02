@@ -150,11 +150,13 @@ public class NodeHealAgent : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
     {
-
         if (agent.agentCurrentHealth < agent.agentMaxHealth)
         {
-            agent.agentCurrentHealth++;
-            agent.healthBar.SetHealth(agent.agentCurrentHealth);
+            if (agent.collidingWithSafePoint)
+            {
+                agent.agentCurrentHealth++;
+                agent.healthBar.SetHealth(agent.agentCurrentHealth);
+            }
             return ReturnState.RUNNING;
         }
         else
@@ -421,7 +423,7 @@ public class NodeIsBallCloseEnough: BT_Node
     {
         float timeToBall = Vector3.Distance(agent.transform.position, agent.targetBall.transform.position) / agent.agentSpeed;
 
-        if (timeToBall > 5f)
+        if (timeToBall > 10f)
         {
             //Debug.Log("Ball is too far away from me.");
             return ReturnState.FAILURE;
