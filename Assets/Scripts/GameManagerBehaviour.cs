@@ -4,6 +4,11 @@ using UnityEngine;
 
 public class GameManagerBehaviour : MonoBehaviour
 {
+    [SerializeField] Canvas screenUI;
+
+    public HealthbarBehaviour healthbar0;
+    public HealthbarBehaviour healthbar1;
+    
     AgentBehaviour agentPrefab;
     BallBehaviour ballPrefab;
     GoalBehaviour goalPrefab;
@@ -37,7 +42,7 @@ public class GameManagerBehaviour : MonoBehaviour
             {
                 GameObject agentParent = new GameObject("AGENTS");
                 agentPrefab = Resources.Load<AgentBehaviour>("Prefabs/Agent");
-                for (int i = 0; i < 4; i++)
+                for (int i = 0; i < 2; i++)
                 {
                     agentPrefab = Instantiate(agentPrefab);
                     agentPrefab.transform.SetParent(agentParent.transform);
@@ -132,6 +137,16 @@ public class GameManagerBehaviour : MonoBehaviour
             {
                 cubes[i].Init(this);
             }
+        }
+
+        // Initialize Screen UI
+        {
+            agents[0].healthBar = healthbar0;
+            agents[0].healthBar.SetMaxHealth(agents[0].agentMaxHealth);
+            agents[0].AgentTakeDamage(-1f);
+            agents[1].healthBar = healthbar1;
+            agents[1].healthBar.SetMaxHealth(agents[1].agentMaxHealth);
+            agents[1].AgentTakeDamage(-1f);
         }
     }
 
