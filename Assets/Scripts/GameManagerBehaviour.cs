@@ -97,7 +97,6 @@ public class GameManagerBehaviour : MonoBehaviour
             for (int i = 0; i < agents.Count; i++)
             {
                 goalInfo[agents[i]] = goals[0];
-
             }
 
             for (int i = 0; i < agents.Count; i++)
@@ -191,6 +190,11 @@ public class GameManagerBehaviour : MonoBehaviour
         }
 
         return null;
+    }
+
+    public void SpawnPowerup()
+    {
+
     }
 
     public AgentRole GetRole(int team)

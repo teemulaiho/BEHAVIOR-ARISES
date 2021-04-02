@@ -28,7 +28,7 @@ public class AgentBehaviour : MonoBehaviour
     public AgentRole agentRole;
     public PowerupState powerupState;
     public MeshRenderer meshRenderer;
-    public Rigidbody rigidBody;
+    public Rigidbody rb;
     public Collider agentCollider;
     public Collision agentCollision;
 
@@ -52,7 +52,10 @@ public class AgentBehaviour : MonoBehaviour
 
     public Vector3 kickForce;
     public Vector3 agentScale;
-    public bool colliding;
+
+    public bool collidingWithBall;
+    public bool collidingWithPowerup;
+    public bool collidingWithAgent;
 
 
     // Agent Behaviour Tree Begin
@@ -81,11 +84,14 @@ public class AgentBehaviour : MonoBehaviour
         recoveryTime = 0;
         targetGoal = gameManager.GetGoal(this);
         meshRenderer = GetComponent<MeshRenderer>();
-        rigidBody = GetComponent<Rigidbody>();
+        rb = GetComponent<Rigidbody>();
         agentCollider = GetComponent<CapsuleCollider>();
+        agentCollision = new Collision();
         originalRotation = transform.rotation;
         score = 0;
-        colliding = false;
+        collidingWithBall = false;
+        collidingWithPowerup = false;
+        collidingWithAgent = false;
 
         kickForce = new Vector3(50, 0, 50);
         agentScale = new Vector3(1, 1, 1);
@@ -245,7 +251,7 @@ public class AgentBehaviour : MonoBehaviour
             {
                 targetBall = null;
                 recoveryTime = 0;
-                colliding = false;
+                //colliding = false;
             }
         }
 
@@ -308,51 +314,65 @@ public class AgentBehaviour : MonoBehaviour
 
     void Act()
     {
-        if (!colliding)
-        {
-            if (agentState != AgentState.Fallen)
-            {
-                if (agentState == AgentState.Fetching)
-                {
-                    transform.position = Vector3.MoveTowards(transform.position, targetBall.transform.position, agentSpeed * Time.deltaTime);
-                }
-                else if (agentState == AgentState.Returning)
-                {
-                    transform.position = Vector3.MoveTowards(transform.position, targetGoal.transform.position, agentSpeed * Time.deltaTime);
-                }
-                else if (agentState == AgentState.Attacking)
-                {
-                    transform.position = Vector3.MoveTowards(transform.position, targetAgent.transform.position, 1.1f * agentSpeed * Time.deltaTime);
-                }
-                else
-                    transform.position = Vector3.MoveTowards(transform.position, targetPos, Time.deltaTime * agentSpeed);
-            }
-            else
-            {
-                rigidBody.useGravity = false;
-                rigidBody.angularVelocity.Set(0, 0, 0);
-                //transform.rotation = Quaternion.Slerp(transform.rotation, originalRotation, Time.deltaTime * agentSpeed);
-                transform.Rotate(0, 0, 1);
-            }
-        }
-        else
-        {
-            agentState = AgentState.Idle;
-        }
+        //if (!colliding)
+        //{
+        //    if (agentState != AgentState.Fallen)
+        //    {
+        //        if (agentState == AgentState.Fetching)
+        //        {
+        //            transform.position = Vector3.MoveTowards(transform.position, targetBall.transform.position, agentSpeed * Time.deltaTime);
+        //        }
+        //        else if (agentState == AgentState.Returning)
+        //        {
+        //            transform.position = Vector3.MoveTowards(transform.position, targetGoal.transform.position, agentSpeed * Time.deltaTime);
+        //        }
+        //        else if (agentState == AgentState.Attacking)
+        //        {
+        //            transform.position = Vector3.MoveTowards(transform.position, targetAgent.transform.position, 1.1f * agentSpeed * Time.deltaTime);
+        //        }
+        //        else
+        //            transform.position = Vector3.MoveTowards(transform.position, targetPos, Time.deltaTime * agentSpeed);
+        //    }
+        //    else
+        //    {
+        //        rigidBody.useGravity = false;
+        //        rigidBody.angularVelocity.Set(0, 0, 0);
+        //        //transform.rotation = Quaternion.Slerp(transform.rotation, originalRotation, Time.deltaTime * agentSpeed);
+        //        transform.Rotate(0, 0, 1);
+        //    }
+        //}
+        //else
+        //{
+        //    agentState = AgentState.Idle;
+        //}
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        agentCollision = collision;
-
-        if (collision.gameObject.CompareTag("Agent"))
+        if (collision.gameObject.CompareTag("Ball"))
         {
-            if (targetAgent != null)
-            {
-                if (collision.collider == targetAgent.agentCollider)
-                    colliding = true;
-            }   
+            collidingWithBall = true;
         }
+        else if (collision.gameObject.CompareTag("Powerup"))
+        {
+            collidingWithPowerup = true;
+        }
+        else if (collision.gameObject.CompareTag("Agent"))
+        {
+            collidingWithAgent = true;
+        }
+
+
+        //Debug.Log(agentCollision.gameObject.tag);
+
+        //if (agentCollision.gameObject.CompareTag("Agent"))
+        //{
+        //    if (targetAgent != null)
+        //    {
+        //        if (collision.collider == targetAgent.agentCollider)
+        //            colliding = true;
+        //    }   
+        //}
 
 
         //if (collision.gameObject.CompareTag("Ball") &&
@@ -394,6 +414,15 @@ public class AgentBehaviour : MonoBehaviour
     private void OnCollisionExit(Collision collision)
     {
         agentCollision = null;
+
+        if (collidingWithBall)
+            collidingWithBall = false;
+
+        if (collidingWithPowerup)
+            collidingWithPowerup = false;
+
+        if (collidingWithAgent)
+            collidingWithAgent = false;
     }
 
     //private void OnTriggerEnter(Collider other)
@@ -462,6 +491,28 @@ public class AgentBehaviour : MonoBehaviour
     {
         agentCurrentHealth -= damage;
         healthBar.SetHealth(agentCurrentHealth);
+    }
+
+    public bool HasAgentReachedCurrentTarget()
+    {
+        if (targetPos == targetBall.transform.position)
+        {
+            if (collidingWithBall)
+                return true;
+        }
+        else if (targetPos == targetPowerup.transform.position)
+        {
+            if (collidingWithPowerup)
+                return true;
+        }
+        else if (targetAgent != null &&
+                 targetPos == targetAgent.transform.position)
+        {
+            if (collidingWithAgent)
+                return true;
+        }
+        
+        return false;
     }
 
     //// Start is called before the first frame update

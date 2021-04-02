@@ -206,6 +206,8 @@ public class NodeMoveTowardsTarget : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
     {
+        //Debug.Log(Vector3.Distance(agent.transform.position, agent.targetPos));
+
         if (agent.targetPos == agent.targetGoal.transform.position)
         {
             agent.transform.position = Vector3.MoveTowards(agent.transform.position, agent.targetPos, agent.agentSpeed * Time.deltaTime);
@@ -217,7 +219,11 @@ public class NodeMoveTowardsTarget : BT_Node
             else
                 return ReturnState.SUCCESS;
         }
-        else if (Vector3.Distance(agent.transform.position, agent.targetPos) < 1)
+        //else if (agent.colliding)
+        //{
+        //    return ReturnState.SUCCESS;
+        //}
+        else if (agent.HasAgentReachedCurrentTarget())
         {
             //Debug.Log("Reached Target: " + agent.targetPos);
             return ReturnState.SUCCESS;
@@ -293,36 +299,84 @@ public class NodeCaptureBall : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
     {
-        if (Vector3.Distance(agent.transform.position, agent.targetBall.transform.position) < 1)
+        if (agent.collidingWithBall)
         {
-            //Debug.Log("Agent:" + agent.name + " captured ball at: " + agent.targetBall.transform.position);
             agent.targetBall.SetAgent(agent);
             return ReturnState.SUCCESS;
         }
-        else
-        {
-            //Debug.Log("Could not capture, distance to ball is: " + Vector3.Distance(agent.transform.position, agent.targetBall.transform.position));
-            return ReturnState.FAILURE;
-        }           
+
+        //if (agent.colliding)
+        //{
+        //    agent.targetBall.SetAgent(agent);
+        //    return ReturnState.SUCCESS;
+        //}
+
+        //if (agent.agentCollision != null)
+        //{
+        //    Debug.Log(agent.agentCollision.gameObject.tag);
+
+        //    if (agent.agentCollision.gameObject.CompareTag("Ball"))
+        //    {
+        //        agent.targetBall.SetAgent(agent);
+        //        return ReturnState.SUCCESS;
+        //    }
+        //}
+
+        return ReturnState.FAILURE;
+
+        //if (Vector3.Distance(agent.transform.position, agent.targetBall.transform.position) < agent.transform.localScale.x)
+        //{
+        //    //Debug.Log("Agent:" + agent.name + " captured ball at: " + agent.targetBall.transform.position);
+        //    agent.targetBall.SetAgent(agent);
+        //    return ReturnState.SUCCESS;
+        //}
+        //else
+        //{
+        //    //Debug.Log("Could not capture, distance to ball is: " + Vector3.Distance(agent.transform.position, agent.targetBall.transform.position));
+        //    return ReturnState.FAILURE;
+        //}           
     }
 }
 public class NodeCapturePowerup : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
     {
-        if (agent.agentCollision != null)
+        if (agent.collidingWithPowerup)
         {
-            if (agent.agentCollision.collider.CompareTag("Powerup"))
-            {
-                agent.AgentPowerup(agent.targetPowerup);
-                agent.targetPowerup.ResetPowerup();
-                //agent.RemoveTargetPowerup();
-                //Debug.Log("Collided with powerup.");
-                return ReturnState.SUCCESS;
-            }
+            agent.AgentPowerup(agent.targetPowerup);
+            agent.targetPowerup.ResetPowerup();
+            return ReturnState.SUCCESS;
         }
 
+        //if (agent.colliding)
+        //{
+        //    agent.AgentPowerup(agent.targetPowerup);
+        //    agent.targetPowerup.ResetPowerup();
+        //    return ReturnState.SUCCESS;
+        //}
+
+        //if (agent.agentCollision != null)
+        //{
+        //    Debug.Log(agent.agentCollision.gameObject.tag);
+
+        //    if (agent.agentCollision.gameObject.CompareTag("Powerup"))
+        //    {
+        //        agent.AgentPowerup(agent.targetPowerup);
+        //        agent.targetPowerup.ResetPowerup();
+        //        //agent.RemoveTargetPowerup();
+        //        //Debug.Log("Collided with powerup.");
+        //        return ReturnState.SUCCESS;
+        //    }
+        //}
+
         //Debug.Log("Powerup too for away for collision.");
+        return ReturnState.FAILURE;
+    }
+}
+public class NodeCapture : BT_Node
+{
+    public override ReturnState Run(AgentBehaviour agent)
+    {
         return ReturnState.FAILURE;
     }
 }
@@ -347,10 +401,10 @@ public class NodeKickAgent : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
     {
-        if (agent.colliding)
+        if (agent.collidingWithAgent)
         {
             //Debug.Log("Reached agent, proceed to kick.");
-            agent.targetAgent.rigidBody.AddExplosionForce(2000f, agent.transform.position, 10f);
+            agent.targetAgent.rb.AddExplosionForce(2000f, agent.transform.position, 10f);
             agent.targetAgent.AgentTakeDamage(agent.kickForce.x);
             agent.targetAgent.targetBall.RemoveAgent(agent.targetAgent);
             agent.targetAgent.RemoveBall();
@@ -367,7 +421,7 @@ public class NodeIsBallCloseEnough: BT_Node
     {
         float timeToBall = Vector3.Distance(agent.transform.position, agent.targetBall.transform.position) / agent.agentSpeed;
 
-        if (timeToBall > 10)
+        if (timeToBall > 5f)
         {
             //Debug.Log("Ball is too far away from me.");
             return ReturnState.FAILURE;
@@ -404,7 +458,8 @@ public class NodeIsPowerupSpeed : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
     {
-        if (agent.targetPowerup != null)
+        if (agent.targetPowerup != null &&
+            agent.targetPowerup.IsActive())
         {
             if (agent.targetPowerup.state.ToString() == "Speed")
                 return ReturnState.SUCCESS;
@@ -417,7 +472,8 @@ public class NodeIsPowerupKick : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
     {
-        if (agent.targetPowerup != null)
+        if (agent.targetPowerup != null &&
+            agent.targetPowerup.IsActive())
         {
             if (agent.targetPowerup.state.ToString() == "Kick")
                 return ReturnState.SUCCESS;
