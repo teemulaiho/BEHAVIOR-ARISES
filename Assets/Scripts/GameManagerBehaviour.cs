@@ -28,6 +28,8 @@ public class GameManagerBehaviour : MonoBehaviour
 
     int agentAmount = 4;
 
+    bool toggle;
+
 
     // Is Called Before Start()
     private void Awake()
@@ -165,6 +167,12 @@ public class GameManagerBehaviour : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.A))
+        {
+            toggle = !toggle;
+            Debug.Log("toggle: " + toggle);
+        }
+
         for (int i = 0; i < agents.Count; i++)
         {
             agents[i].AgentUpdate();
