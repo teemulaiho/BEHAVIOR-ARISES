@@ -408,6 +408,10 @@ public class NodeKickAgent : BT_Node
             //Debug.Log("Reached agent, proceed to kick.");
             agent.targetAgent.rb.AddExplosionForce(2000f, agent.transform.position, 10f);
             agent.targetAgent.AgentTakeDamage(agent.kickForce.x);
+
+            if (!agent.agentKickParticles.isPlaying)
+                agent.agentKickParticles.Play();
+
             agent.targetAgent.targetBall.RemoveAgent(agent.targetAgent);
             agent.targetAgent.RemoveBall();
             agent.RemoveTargetAgent();

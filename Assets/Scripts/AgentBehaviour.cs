@@ -31,6 +31,7 @@ public class AgentBehaviour : MonoBehaviour
     public Rigidbody rb;
     public Collider agentCollider;
     public Collision agentCollision;
+    public ParticleSystem agentKickParticles;
 
     public HealthbarBehaviour healthBar;
 
@@ -88,6 +89,7 @@ public class AgentBehaviour : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         agentCollider = GetComponent<CapsuleCollider>();
         agentCollision = new Collision();
+        agentKickParticles = GetComponentInChildren<ParticleSystem>();
         originalRotation = transform.rotation;
         score = 0;
         collidingWithBall = false;
