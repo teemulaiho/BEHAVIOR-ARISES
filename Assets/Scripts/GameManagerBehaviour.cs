@@ -1,9 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManagerBehaviour : MonoBehaviour
 {
+    static GameManagerBehaviour instance;
+
     [SerializeField] Canvas screenUI;
 
     public HealthbarBehaviour[] healthBars;
@@ -35,6 +38,7 @@ public class GameManagerBehaviour : MonoBehaviour
     private void Awake()
     {
         Debug.Log("Awake GameManager.");
+        //CheckForDuplicateGameObjects();     // Remove DontDestroyOnLoad Duplicates.
     }
 
     // Start is called before the first frame update
@@ -200,6 +204,17 @@ public class GameManagerBehaviour : MonoBehaviour
         //{
         //    cubes[i].CubeUpdate();
         //}
+    }
+
+    private void CheckForDuplicateGameObjects()
+    {
+        if (instance == null)
+        {
+            instance = this;
+            DontDestroyOnLoad(this);
+        }
+        else if (instance != this)
+            Destroy(gameObject);
     }
 
     public BallBehaviour GetFreeBall(AgentBehaviour agent)
