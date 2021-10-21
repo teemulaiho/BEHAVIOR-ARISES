@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public enum AgentState
 {
@@ -34,6 +35,7 @@ public class AgentBehaviour : MonoBehaviour
     public ParticleSystem agentKickParticles;
 
     public HealthbarBehaviour healthBar;
+    public TMP_Text scoreText;
 
     public GoalBehaviour targetGoal;
     public BallBehaviour targetBall;
@@ -59,6 +61,7 @@ public class AgentBehaviour : MonoBehaviour
     public bool collidingWithPowerup;
     public bool collidingWithAgent;
     public bool collidingWithSafePoint;
+    public bool isHealing;
 
     // Agent Behaviour Tree Begin
     public BT_Node bt_root;
@@ -128,11 +131,11 @@ public class AgentBehaviour : MonoBehaviour
                 Inverter inverter = new Inverter();
                 inverter.children.Add(new NodeCheckHealthAbove50Percent());
 
-                Sequencer IsMyHealthBelow50Percent = new Sequencer();
-                IsMyHealthBelow50Percent.children.Add(inverter);
-                IsMyHealthBelow50Percent.children.Add(new NodeTargetSafeArea());
-                IsMyHealthBelow50Percent.children.Add(new NodeMoveTowardsTarget());
-                IsMyHealthBelow50Percent.children.Add(new NodeHealAgent());
+                Sequencer IsMyHealthBelow25Percent = new Sequencer();
+                IsMyHealthBelow25Percent.children.Add(HealthAbove25PercentInverter);
+                IsMyHealthBelow25Percent.children.Add(new NodeTargetSafeArea());
+                IsMyHealthBelow25Percent.children.Add(new NodeMoveTowardsTarget());
+                IsMyHealthBelow25Percent.children.Add(new NodeHealAgent());
 
                 Sequencer DoIHaveBall = new Sequencer();
                 DoIHaveBall.children.Add(new NodeDoIHaveBall());
@@ -169,7 +172,7 @@ public class AgentBehaviour : MonoBehaviour
                 IsBallFree.children.Add(new NodeCaptureBall());
 
                 Selector HealthBranch = new Selector();
-                HealthBranch.children.Add(IsMyHealthBelow50Percent);
+                HealthBranch.children.Add(IsMyHealthBelow25Percent);
 
                 Selector BallBranch = new Selector();
                 BallBranch.children.Add(DoIHaveBall);
@@ -180,7 +183,7 @@ public class AgentBehaviour : MonoBehaviour
                 PowerupBranch.children.Add(IsPowerupSpeed);
                 PowerupBranch.children.Add(IsPowerupKick);
 
-                root.children.Add(IsMyHealthBelow50Percent);
+                root.children.Add(IsMyHealthBelow25Percent);
                 root.children.Add(BallBranch);
                 root.children.Add(PowerupBranch);
             }
@@ -462,6 +465,11 @@ public class AgentBehaviour : MonoBehaviour
         //Debug.Log("Agent " + meshRenderer.material.color.ToString() + " Score: " + score);
     }
 
+    public int GetScore()
+    {
+        return score;
+    }
+
     public void RemoveBall()
     {
         if (targetBall != null)
@@ -526,6 +534,11 @@ public class AgentBehaviour : MonoBehaviour
                  targetPos == targetAgent.transform.position)
         {
             if (collidingWithAgent)
+                return true;
+        }
+        else if (targetPos == safePos)
+        {
+            if (collidingWithSafePoint)
                 return true;
         }
         

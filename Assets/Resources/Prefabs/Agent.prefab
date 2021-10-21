@@ -127,11 +127,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gameManager: {fileID: 0}
   agentState: 0
-  agentRole: 0
+  agentRole: 1
   powerupState: 0
   meshRenderer: {fileID: 0}
   rb: {fileID: 0}
   agentCollider: {fileID: 0}
+  agentKickParticles: {fileID: 0}
   healthBar: {fileID: 666367479369210952}
   targetGoal: {fileID: 0}
   targetBall: {fileID: 0}

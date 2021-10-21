@@ -1,13 +1,16 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class GameManagerBehaviour : MonoBehaviour
 {
     [SerializeField] Canvas screenUI;
+    Canvas screenUIPrefab;
 
     public HealthbarBehaviour[] healthBars;
-    
+    public TMP_Text[] agentScoreTexts;
+
     AgentBehaviour agentPrefab;
     BallBehaviour ballPrefab;
     GoalBehaviour goalPrefab;
@@ -26,6 +29,8 @@ public class GameManagerBehaviour : MonoBehaviour
     public Dictionary<AgentBehaviour, BallBehaviour> captureInfo = new Dictionary<AgentBehaviour, BallBehaviour>();
     public Dictionary<AgentBehaviour, GoalBehaviour> goalInfo = new Dictionary<AgentBehaviour, GoalBehaviour>();
 
+    public Dictionary<TMP_Text, AgentBehaviour> scoreInfo = new Dictionary<TMP_Text, AgentBehaviour>();
+
     int agentAmount = 4;
 
     bool toggle;
@@ -35,6 +40,9 @@ public class GameManagerBehaviour : MonoBehaviour
     private void Awake()
     {
         Debug.Log("Awake GameManager.");
+
+        //screenUIPrefab = Resources.Load<Canvas>("Prefabs/Canvas");
+        //screenUI = Instantiate(screenUIPrefab);
     }
 
     // Start is called before the first frame update
@@ -106,6 +114,7 @@ public class GameManagerBehaviour : MonoBehaviour
             {
                 safepointPrefab = Resources.Load<GameObject>("Prefabs/SafePoint");
                 safepointPrefab = Instantiate(safepointPrefab);
+                safepointPrefab.tag = "SafePoint";
                 safepoints.Add(safepointPrefab);
             }
         }
@@ -162,6 +171,14 @@ public class GameManagerBehaviour : MonoBehaviour
                 }
             }
         }
+
+        // Initialize UI ScoreTexts With Agents
+        {
+            for (int i = 0; i < agents.Count; i++)
+            {
+                scoreInfo.Add(agentScoreTexts[i], agents[i]);
+            }
+        }
     }
 
     // Update is called once per frame
@@ -188,11 +205,19 @@ public class GameManagerBehaviour : MonoBehaviour
             powerups[i].PowerupUpdate();
         }
 
-        // Update Health bars
+        // Update UI Health bars
         {
             for (int i = 0; i < agents.Count; i++)
             {
                 healthBars[i].SetHealth(agents[i].agentCurrentHealth);
+            }
+        }
+
+        // Update UI Score Texts
+        {
+            foreach (TMP_Text t in scoreInfo.Keys)
+            {
+                t.text = scoreInfo[t].GetScore().ToString();
             }
         }
 

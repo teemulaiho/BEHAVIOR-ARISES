@@ -71,6 +71,7 @@ public class Sequencer : BT_Node // Run reaction steps.
         return ReturnState.SUCCESS;
     }
 }
+
 public class Inverter : BT_Node
 {
     public List<BT_Node> children = new List<BT_Node>();
@@ -91,7 +92,8 @@ public class Inverter : BT_Node
         //Debug.Log("Inverting state: " + "Success" + " to " + ReturnState.FAILURE);
         return ReturnState.FAILURE;
     }
-    }
+}
+
 public class NodePrint : BT_Node
 {
     private string text = "";
@@ -111,7 +113,8 @@ public class NodeCheckHealthAbove25Percent : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
     {
-        if (agent.agentCurrentHealth / agent.agentMaxHealth > 0.25f)
+        if (agent.agentCurrentHealth / agent.agentMaxHealth > 0.25f &&
+            !agent.isHealing)
         {
             return ReturnState.SUCCESS;
         }
@@ -119,11 +122,13 @@ public class NodeCheckHealthAbove25Percent : BT_Node
         return ReturnState.FAILURE;
     }
 }
+
 public class NodeCheckHealthAbove50Percent : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
     {
-        if (agent.agentCurrentHealth / agent.agentMaxHealth > 0.5f)
+        if (agent.agentCurrentHealth / agent.agentMaxHealth > 0.5f &&
+            !agent.isHealing)
         {
             return ReturnState.SUCCESS;
         }
@@ -131,6 +136,7 @@ public class NodeCheckHealthAbove50Percent : BT_Node
         return ReturnState.FAILURE;
     }
 }
+
 public class NodeTargetHealthPotion : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
@@ -138,6 +144,7 @@ public class NodeTargetHealthPotion : BT_Node
         return ReturnState.FAILURE;
     }
 }
+
 public class NodeTargetSafeArea : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
@@ -146,6 +153,7 @@ public class NodeTargetSafeArea : BT_Node
         return ReturnState.SUCCESS;
     }
 }
+
 public class NodeHealAgent : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
@@ -154,13 +162,19 @@ public class NodeHealAgent : BT_Node
         {
             if (agent.collidingWithSafePoint)
             {
+                if (!agent.isHealing)
+                    agent.isHealing = true;
+
                 agent.agentCurrentHealth++;
                 agent.healthBar.SetHealth(agent.agentCurrentHealth);
             }
             return ReturnState.RUNNING;
         }
         else
+        {
+            agent.isHealing = false;
             return ReturnState.SUCCESS;
+        }
     }
 }
 
@@ -179,6 +193,7 @@ public class NodeDoIHaveBall : BT_Node
             return ReturnState.FAILURE;
     }
 }
+
 public class NodeDoesSomeoneElseHaveBall : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
@@ -192,6 +207,7 @@ public class NodeDoesSomeoneElseHaveBall : BT_Node
             return ReturnState.FAILURE;
     }
 }
+
 public class NodeIsBallFree : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
@@ -204,6 +220,7 @@ public class NodeIsBallFree : BT_Node
             return ReturnState.FAILURE;      
     }
 }
+
 public class NodeMoveTowardsTarget : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
@@ -237,6 +254,7 @@ public class NodeMoveTowardsTarget : BT_Node
         }
     }
 }
+
 public class NodeTargetBall : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
@@ -246,6 +264,7 @@ public class NodeTargetBall : BT_Node
         return ReturnState.SUCCESS;
     }
 }
+
 public class NodeTargetAgent : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
@@ -274,6 +293,7 @@ public class NodeTargetAgent : BT_Node
         return ReturnState.FAILURE;
     }
 }
+
 public class NodeTargetGoal : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
@@ -283,6 +303,7 @@ public class NodeTargetGoal : BT_Node
         return ReturnState.SUCCESS;
     }
 }
+
 public class NodeTargetPowerup : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
@@ -297,6 +318,7 @@ public class NodeTargetPowerup : BT_Node
         return ReturnState.FAILURE;
     }
 }
+
 public class NodeCaptureBall : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
@@ -339,6 +361,7 @@ public class NodeCaptureBall : BT_Node
         //}           
     }
 }
+
 public class NodeCapturePowerup : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
@@ -375,6 +398,7 @@ public class NodeCapturePowerup : BT_Node
         return ReturnState.FAILURE;
     }
 }
+
 public class NodeCapture : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
@@ -382,6 +406,7 @@ public class NodeCapture : BT_Node
         return ReturnState.FAILURE;
     }
 }
+
 public class NodeScoreGoal : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
@@ -399,6 +424,7 @@ public class NodeScoreGoal : BT_Node
         }
     }
 }
+
 public class NodeKickAgent : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
@@ -421,6 +447,7 @@ public class NodeKickAgent : BT_Node
         return ReturnState.FAILURE;
     }
 }
+
 public class NodeIsBallCloseEnough: BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
@@ -437,6 +464,7 @@ public class NodeIsBallCloseEnough: BT_Node
         return ReturnState.SUCCESS;
     }
 }
+
 public class NodeIsPowerupCloseEnough : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
@@ -460,6 +488,7 @@ public class NodeIsPowerupCloseEnough : BT_Node
         return ReturnState.SUCCESS;
     }
 }
+
 public class NodeIsPowerupSpeed : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
@@ -474,6 +503,7 @@ public class NodeIsPowerupSpeed : BT_Node
         return ReturnState.FAILURE;
     }
 }
+
 public class NodeIsPowerupKick : BT_Node
 {
     public override ReturnState Run(AgentBehaviour agent)
