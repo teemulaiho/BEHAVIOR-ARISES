@@ -226,6 +226,7 @@ public class NodeMoveTowardsTarget : BT_Node
     public override ReturnState Run(AgentBehaviour agent)
     {
         //Debug.Log(Vector3.Distance(agent.transform.position, agent.targetPos));
+        agent.transform.LookAt(agent.targetPos);
 
         if (agent.targetPos == agent.targetGoal.transform.position)
         {
