@@ -2186,7 +2186,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh13966
+  m_Name: pb_Mesh23206
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -2349,7 +2349,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh13896
+  m_Name: pb_Mesh23146
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -2512,7 +2512,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh13908
+  m_Name: pb_Mesh23160
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -2675,7 +2675,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh13866
+  m_Name: pb_Mesh23130
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -2938,7 +2938,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh13978
+  m_Name: pb_Mesh23220
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -3152,11 +3152,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Canvas
       objectReference: {fileID: 0}
-    - target: {fileID: 3474040032636153960, guid: 2013d59afd173e043bcb8570b7cdfd5c,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 3474040032636153955, guid: 2013d59afd173e043bcb8570b7cdfd5c,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -3302,6 +3297,15 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 3474040032636153959, guid: 2013d59afd173e043bcb8570b7cdfd5c, type: 3}
+    - target: {fileID: 3474040032636153957, guid: 2013d59afd173e043bcb8570b7cdfd5c,
+        type: 3}
+      propertyPath: m_MatchWidthOrHeight
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7056839649442034152, guid: 2013d59afd173e043bcb8570b7cdfd5c,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0.00012207031
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2013d59afd173e043bcb8570b7cdfd5c, type: 3}
