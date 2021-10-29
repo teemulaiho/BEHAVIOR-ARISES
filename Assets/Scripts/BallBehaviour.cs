@@ -37,6 +37,14 @@ public class BallBehaviour : MonoBehaviour
             transform.position = Vector3.MoveTowards(transform.position, agent.transform.position, speed * Time.deltaTime);
         }
 
+        if (agent == null)
+        {
+            if (Vector3.Distance(transform.position, gameManager.GetGoalPosition()) > 50)
+            {
+                ResetBall();
+            }
+        }
+
         //if (gameManager.AmIBeingChased(this, ref fleefrom))
         //{
         //    ballState = BallState.Targeted;

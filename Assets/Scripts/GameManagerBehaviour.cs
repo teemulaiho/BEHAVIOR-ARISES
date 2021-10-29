@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 
 public class GameManagerBehaviour : MonoBehaviour
@@ -10,6 +11,7 @@ public class GameManagerBehaviour : MonoBehaviour
 
     public HealthbarBehaviour[] healthBars;
     public TMP_Text[] agentScoreTexts;
+    public Image[] agentImages;
 
     AgentBehaviour agentPrefab;
     BallBehaviour ballPrefab;
@@ -25,11 +27,14 @@ public class GameManagerBehaviour : MonoBehaviour
     List<CubeBehaviour> cubes = new List<CubeBehaviour>();
     List<GameObject> safepoints = new List<GameObject>();
 
+    public List<Sprite> agentSprites = new List<Sprite>();
+    
     public Dictionary<AgentBehaviour, BallBehaviour> chaseInfo = new Dictionary<AgentBehaviour, BallBehaviour>();
     public Dictionary<AgentBehaviour, BallBehaviour> captureInfo = new Dictionary<AgentBehaviour, BallBehaviour>();
     public Dictionary<AgentBehaviour, GoalBehaviour> goalInfo = new Dictionary<AgentBehaviour, GoalBehaviour>();
 
     public Dictionary<TMP_Text, AgentBehaviour> scoreInfo = new Dictionary<TMP_Text, AgentBehaviour>();
+    public Dictionary<Image, AgentBehaviour> agentTargetInfo = new Dictionary<Image, AgentBehaviour>();
 
     int agentAmount = 4;
 
@@ -179,6 +184,14 @@ public class GameManagerBehaviour : MonoBehaviour
                 scoreInfo.Add(agentScoreTexts[i], agents[i]);
             }
         }
+
+        // Initialize UI AgentTargets With Agents
+        {
+            for (int i = 0; i < agents.Count; i++)
+            {
+                agentTargetInfo.Add(agentImages[i], agents[i]);
+            }
+        }
     }
 
     // Update is called once per frame
@@ -218,6 +231,23 @@ public class GameManagerBehaviour : MonoBehaviour
             foreach (TMP_Text t in scoreInfo.Keys)
             {
                 t.text = scoreInfo[t].GetScore().ToString();
+            }
+        }
+
+        // Update UI Agent Targets
+        {
+            foreach (Image i in agentTargetInfo.Keys)
+            {
+                int index = 0; 
+                foreach(AgentBehaviour a in agents)
+                {
+                    if (a == agentTargetInfo[i].GetTargetAgent())
+                    {
+                        i.sprite = agentSprites[index];
+                    }
+
+                    index++;
+                }
             }
         }
 
@@ -425,6 +455,14 @@ public class GameManagerBehaviour : MonoBehaviour
     public GoalBehaviour GetGoal(AgentBehaviour agent)
     {
         return goalInfo[agent];
+    }
+
+    public Vector3 GetGoalPosition()
+    {
+        if (goals.Count > 0)
+            return goals[0].transform.position;
+
+        return Vector3.zero;
     }
 
     public GameObject GetSafePoint()

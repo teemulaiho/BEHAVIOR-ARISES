@@ -228,6 +228,13 @@ public class AgentBehaviour : MonoBehaviour
 
     public void AgentUpdate()
     {
+        if (Vector3.Distance(transform.position, targetGoal.transform.position) > 50)
+        {
+            transform.position = new Vector3(Random.Range(0, 49), 4, Random.Range(-1, -49));
+            rb.velocity = Vector3.zero;
+        }
+
+
         if (Input.GetKeyDown(KeyCode.Space))
         {
             AgentTakeDamage(20);
@@ -543,6 +550,11 @@ public class AgentBehaviour : MonoBehaviour
         }
         
         return false;
+    }
+
+    public AgentBehaviour GetTargetAgent()
+    {
+        return targetAgent;
     }
 
     //// Start is called before the first frame update
