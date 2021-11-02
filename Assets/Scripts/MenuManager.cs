@@ -11,6 +11,9 @@ public class MenuManager : MonoBehaviour
     public List<GameObject> moshbots;
     public List<Button> buttons;
 
+    public Animator transition;
+    public float transitionTime = 1f;
+
     private void OnEnable()
     {
 
@@ -37,6 +40,7 @@ public class MenuManager : MonoBehaviour
 
         GetInput();
     }
+
     private bool CheckForSceneChanges()
     {
         if (currentScene != SceneManager.GetActiveScene())
@@ -56,7 +60,8 @@ public class MenuManager : MonoBehaviour
             if (SceneManager.GetActiveScene().name != "MainMenu" &&
                 SceneManager.GetActiveScene().name != "MoshbotViewer")
             {
-                SceneManager.LoadScene("MainMenu");
+                //SceneManager.LoadScene("MainMenu");
+                LoadSceneMainMenu();
             }
         }
     }
@@ -105,16 +110,32 @@ public class MenuManager : MonoBehaviour
 
     public void LoadGameScene()
     {
-        SceneManager.LoadScene("Level 1");
+        //SceneManager.LoadScene("Level 1");
+        StartCoroutine(LoadScene("Level 1"));
     }
 
     public void LoadSceneMainMenu()
     {
-        SceneManager.LoadScene("MainMenu");
+        //SceneManager.LoadScene("MainMenu");
+        StartCoroutine(LoadScene("MainMenu"));
     }
 
     public void LoadSceneMoshBotViewer()
     {
-        SceneManager.LoadScene("MoshbotViewer");
+        //SceneManager.LoadScene("MoshbotViewer");
+        StartCoroutine(LoadScene("MoshbotViewer"));
+    }
+
+    IEnumerator LoadScene(string level)
+    {
+        transition.SetTrigger("Start");
+
+        yield return new WaitForSeconds(transitionTime);
+
+        SceneManager.LoadScene(level);
+
+        transition.SetTrigger("End");
+
+        yield return new WaitForSeconds(transitionTime);
     }
 }
