@@ -14,6 +14,8 @@ public class MenuManager : MonoBehaviour
     public Animator transition;
     public float transitionTime = 1f;
 
+    public bool allowInput = false;
+
     private void OnEnable()
     {
 
@@ -38,7 +40,8 @@ public class MenuManager : MonoBehaviour
             GetUIButtonsFromActiveScene();
         }
 
-        GetInput();
+        if (allowInput)
+            GetInput();
     }
 
     private bool CheckForSceneChanges()
@@ -129,6 +132,7 @@ public class MenuManager : MonoBehaviour
     IEnumerator LoadScene(string level)
     {
         transition.SetTrigger("Start");
+        allowInput = false;
 
         yield return new WaitForSeconds(transitionTime);
 
@@ -137,5 +141,6 @@ public class MenuManager : MonoBehaviour
         transition.SetTrigger("End");
 
         yield return new WaitForSeconds(transitionTime);
+        allowInput = true;
     }
 }
