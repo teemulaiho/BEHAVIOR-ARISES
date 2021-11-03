@@ -150,6 +150,7 @@ public class NodeTargetSafeArea : BT_Node
     public override ReturnState Run(AgentBehaviour agent)
     {
         agent.targetPos = agent.safePos;
+        agent.targetType = TargetType.Safe;
         return ReturnState.SUCCESS;
     }
 }
@@ -262,6 +263,7 @@ public class NodeTargetBall : BT_Node
     {
        // Debug.Log("Targeting Ball.");
         agent.targetPos = agent.targetBall.transform.position;
+        agent.targetType = TargetType.Ball;
         return ReturnState.SUCCESS;
     }
 }
@@ -278,6 +280,7 @@ public class NodeTargetAgent : BT_Node
                 //Debug.Log("Targeting agent who has ball.");
                 agent.targetPos = agent.targetBall.agent.transform.position;
                 agent.targetAgent = agent.targetBall.agent;
+                agent.targetType = TargetType.Agent;
                 return ReturnState.SUCCESS;
             }
         }
@@ -301,6 +304,7 @@ public class NodeTargetGoal : BT_Node
     {
         //Debug.Log("Targeting Goal.");
         agent.targetPos = agent.targetGoal.transform.position;
+        agent.targetType = TargetType.Goal;
         return ReturnState.SUCCESS;
     }
 }
@@ -313,6 +317,7 @@ public class NodeTargetPowerup : BT_Node
         {
             //Debug.Log("Targeting Powerup: " + agent.targetPowerup.state);
             agent.targetPos = agent.targetPowerup.transform.position;
+            agent.targetType = TargetType.Powerup;
             return ReturnState.SUCCESS;
         }
 

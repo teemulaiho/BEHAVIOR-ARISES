@@ -22,9 +22,20 @@ public enum AgentRole
     Healer
 }
 
+public enum TargetType
+{
+    None,
+    Agent,
+    Ball,
+    Goal,
+    Safe,
+    Powerup
+}
+
 public class AgentBehaviour : MonoBehaviour
 {
     public GameManagerBehaviour gameManager;
+    public int agentID;
     public AgentState agentState;
     public AgentRole agentRole;
     public PowerupState powerupState;
@@ -37,6 +48,7 @@ public class AgentBehaviour : MonoBehaviour
     public HealthbarBehaviour healthBar;
     public TMP_Text scoreText;
 
+    public TargetType targetType;
     public GoalBehaviour targetGoal;
     public BallBehaviour targetBall;
     public AgentBehaviour targetAgent;
@@ -68,16 +80,18 @@ public class AgentBehaviour : MonoBehaviour
     //static Selector bt_root;
     // Agent Behaviour Tree End
 
-    public void Init(GameManagerBehaviour p_gameManager)
+    public void Init(GameManagerBehaviour p_gameManager, int ID)
     {
         //Debug.Log("Init AgentBehaviour.");
 
         this.name = "Agent";
         gameManager = p_gameManager;
+        agentID = ID;
         agentState = AgentState.Idle;
         //agentRole = gameManager.GetRole(team);
         agentRole = AgentRole.Lead;
         //Debug.Log(agentRole);
+        targetType = TargetType.None;
         targetBall = null;
         targetAgent = null;
         targetPowerup = gameManager.GetPowerup();
@@ -555,6 +569,16 @@ public class AgentBehaviour : MonoBehaviour
     public AgentBehaviour GetTargetAgent()
     {
         return targetAgent;
+    }
+
+    public int GetAgentID()
+    {
+        return agentID;
+    }
+
+    public TargetType GetTargetType()
+    {
+        return targetType;
     }
 
     //// Start is called before the first frame update

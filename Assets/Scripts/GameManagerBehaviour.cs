@@ -27,7 +27,7 @@ public class GameManagerBehaviour : MonoBehaviour
     List<CubeBehaviour> cubes = new List<CubeBehaviour>();
     List<GameObject> safepoints = new List<GameObject>();
 
-    public List<Sprite> agentSprites = new List<Sprite>();
+    public List<Sprite> uiSprites = new List<Sprite>();
     
     public Dictionary<AgentBehaviour, BallBehaviour> chaseInfo = new Dictionary<AgentBehaviour, BallBehaviour>();
     public Dictionary<AgentBehaviour, BallBehaviour> captureInfo = new Dictionary<AgentBehaviour, BallBehaviour>();
@@ -133,7 +133,7 @@ public class GameManagerBehaviour : MonoBehaviour
 
             for (int i = 0; i < agents.Count; i++)
             {
-                agents[i].Init(this);
+                agents[i].Init(this, i);
 
                 if (i == 0)
                     agents[i].meshRenderer.material.color = Color.green;
@@ -238,16 +238,63 @@ public class GameManagerBehaviour : MonoBehaviour
         {
             foreach (Image i in agentTargetInfo.Keys)
             {
-                int index = 0; 
-                foreach(AgentBehaviour a in agents)
+                if (agentTargetInfo[i].GetTargetType() == TargetType.Ball)
                 {
-                    if (a == agentTargetInfo[i].GetTargetAgent())
-                    {
-                        i.sprite = agentSprites[index];
-                    }
-
-                    index++;
+                    i.sprite = uiSprites[4];
                 }
+                else if (agentTargetInfo[i].GetTargetType() == TargetType.Goal)
+                {
+                    i.sprite = uiSprites[7];
+                }
+                else if (agentTargetInfo[i].GetTargetType() == TargetType.Safe)
+                {
+                    i.sprite = uiSprites[6];
+                }
+                else if (agentTargetInfo[i].GetTargetType() == TargetType.Powerup)
+                {
+                    i.sprite = uiSprites[8];
+                }
+                else if (agentTargetInfo[i].GetTargetType() == TargetType.Agent)
+                {
+                    if (agentTargetInfo[i].GetTargetAgent() != null)
+                    {
+                        int spriteID = agentTargetInfo[i].GetTargetAgent().GetAgentID();
+                        i.sprite = uiSprites[spriteID];
+                    }  
+                }
+
+                //int index = 0; 
+                //foreach(AgentBehaviour a in agents)
+                //{
+                //    if (a.GetTargetType() == TargetType.Ball)
+                //    {
+                //        i.sprite = uiSprites[4];
+                //    }
+                //    else if (a.GetTargetType() == TargetType.Goal)
+                //    {
+                //        i.sprite = uiSprites[7];
+                //    }
+                //    else if (a.GetTargetType() == TargetType.Safe)
+                //    {
+                //        i.sprite = uiSprites[6];
+                //    }
+                //    else if (a.GetTargetType() == TargetType.Powerup)
+                //    {
+                //        i.sprite = uiSprites[8];
+                //    }
+                //    else if (a.GetTargetType() == TargetType.Agent)
+                //    {
+                //        i.sprite = uiSprites[0];
+                //    }
+
+
+                //    //if (a == agentTargetInfo[i].GetTargetAgent())
+                //    //{
+                //    //    i.sprite = uiSprites[index];
+                //    //}
+
+                //    index++;
+                //}
             }
         }
 
