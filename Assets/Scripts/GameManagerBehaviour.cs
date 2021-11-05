@@ -39,6 +39,7 @@ public class GameManagerBehaviour : MonoBehaviour
     int agentAmount = 4;
 
     bool toggle;
+    public bool isTeamPlayActive;
 
 
     // Is Called Before Start()
@@ -134,15 +135,6 @@ public class GameManagerBehaviour : MonoBehaviour
             for (int i = 0; i < agents.Count; i++)
             {
                 agents[i].Init(this, i);
-
-                if (i == 0)
-                    agents[i].meshRenderer.material.color = Color.green;
-                else if (i == 1)
-                    agents[i].meshRenderer.material.color = Color.red;
-                else if (i == 2)
-                    agents[i].meshRenderer.material.color = Color.blue;
-                else if (i == 3)
-                    agents[i].meshRenderer.material.color = Color.black;
             }
 
             for (int i = 0; i < balls.Count; i++)
@@ -252,7 +244,11 @@ public class GameManagerBehaviour : MonoBehaviour
                 }
                 else if (agentTargetInfo[i].GetTargetType() == TargetType.Powerup)
                 {
-                    i.sprite = uiSprites[8];
+                    if (agentTargetInfo[i].targetPowerup.GetPowerupState() == PowerupState.Speed)
+                        i.sprite = uiSprites[8];
+                    else if (agentTargetInfo[i].targetPowerup.GetPowerupState() == PowerupState.Kick)
+                        i.sprite = uiSprites[9];
+
                 }
                 else if (agentTargetInfo[i].GetTargetType() == TargetType.Agent)
                 {
@@ -261,6 +257,7 @@ public class GameManagerBehaviour : MonoBehaviour
                         int spriteID = agentTargetInfo[i].GetTargetAgent().GetAgentID();
                         i.sprite = uiSprites[spriteID];
                     }  
+  
                 }
 
                 //int index = 0; 
@@ -518,5 +515,10 @@ public class GameManagerBehaviour : MonoBehaviour
             return safepoints[0];
 
         return null;
+    }
+
+    public bool GetTeamPlayMode()
+    {
+        return isTeamPlayActive;
     }
 }

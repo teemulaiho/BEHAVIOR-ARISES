@@ -86,4 +86,9 @@ public class PowerupBehaviour : MonoBehaviour
     {
         return isActive;
     }
+
+    public PowerupState GetPowerupState()
+    {
+        return state;
+    }
 }

@@ -120,14 +120,28 @@ public class AgentBehaviour : MonoBehaviour
         targetSafePoint = gameManager.GetSafePoint();
         safePos = targetSafePoint.transform.position;
 
-        //if (team == 0)
-        //{
-        //    meshRenderer.material.color = Color.blue;
-        //}
-        //else if (team == 1)
-        //{
-        //    meshRenderer.material.color = Color.red;
-        //}
+        if (gameManager.GetTeamPlayMode())
+        {
+            if (team == 0)
+            {
+                meshRenderer.material.color = Color.blue;
+            }
+            else if (team == 1)
+            {
+                meshRenderer.material.color = Color.red;
+            }
+        }
+        else
+        {
+            if (agentID == 0)
+                meshRenderer.material.color = Color.green;
+            else if (agentID == 1)
+                meshRenderer.material.color = Color.red;
+            else if (agentID == 2)
+                meshRenderer.material.color = Color.blue;
+            else if (agentID == 3)
+                meshRenderer.material.color = Color.black;
+        }
 
         // Agent Behaviour Tree Begin  
         if (bt_root == null)
@@ -247,7 +261,6 @@ public class AgentBehaviour : MonoBehaviour
             transform.position = new Vector3(Random.Range(0, 49), 4, Random.Range(-1, -49));
             rb.velocity = Vector3.zero;
         }
-
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
