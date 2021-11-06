@@ -567,3 +567,58 @@ public class NodeEnemyAttackTargetAgent : BT_Node
         return ReturnState.FAILURE;
     }
 }
+
+public class NodeSetNewDestination : BT_Node
+{
+    public override ReturnState Run(Agent a)
+    {
+        EnemyBehaviour enemy = (EnemyBehaviour)a;
+        enemy.SetNewNavMeshDestination();
+        Debug.Log("New destination for enemy: " + enemy.GetNavMeshDestination());
+
+        return ReturnState.SUCCESS;
+    }
+}
+
+public class NodeEnemyIsMyDestinationATorch: BT_Node
+{
+    public override ReturnState Run(Agent a)
+    {
+        EnemyBehaviour enemy = (EnemyBehaviour)a;
+
+        if (enemy.CompareDestinationToTorchPositions(enemy.GetNavMeshDestination()))
+        {
+            return ReturnState.FAILURE;
+        }
+
+        enemy.SetNewNavMeshDestination();
+
+        return ReturnState.SUCCESS;
+    }
+}
+
+public class NodeEnemyHasReachedDestination : BT_Node
+{
+    public override ReturnState Run(Agent a)
+    {
+        EnemyBehaviour enemy = (EnemyBehaviour)a;
+
+        if (Vector3.Distance(enemy.GetNavMeshDestination(), enemy.transform.position) > 5f)
+            return ReturnState.SUCCESS;
+        else
+            return ReturnState.RUNNING;
+    }
+}
+
+public class NodeEnemyMoveTowardsDestination :BT_Node
+{
+    public override ReturnState Run(Agent a)
+    {
+        EnemyBehaviour enemy = (EnemyBehaviour)a;
+
+        if (Vector3.Distance(enemy.GetNavMeshDestination(), enemy.transform.position) < 5f)
+            return ReturnState.SUCCESS;
+        else
+            return ReturnState.RUNNING;
+    }
+}

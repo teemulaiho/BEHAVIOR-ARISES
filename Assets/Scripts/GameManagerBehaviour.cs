@@ -21,6 +21,7 @@ public class GameManagerBehaviour : MonoBehaviour
     CubeBehaviour cubePrefab;
     GameObject safepointPrefab;
     RectTransform agentUIPrefab;
+    GameObject torchPrefab;
 
     List<EnemyBehaviour> enemies                                    = new List<EnemyBehaviour>();
     List<AgentBehaviour> agents                                     = new List<AgentBehaviour>();
@@ -29,7 +30,8 @@ public class GameManagerBehaviour : MonoBehaviour
     List<PowerupBehaviour> powerups                                 = new List<PowerupBehaviour>();
     List<CubeBehaviour> cubes                                       = new List<CubeBehaviour>();
     List<GameObject> safepoints                                     = new List<GameObject>();
-
+    List<GameObject> torches                                        = new List<GameObject>();
+    
     public List<Sprite> uiSprites                                   = new List<Sprite>();
     
     public Dictionary<AgentBehaviour, BallBehaviour> chaseInfo      = new Dictionary<AgentBehaviour, BallBehaviour>();
@@ -40,7 +42,8 @@ public class GameManagerBehaviour : MonoBehaviour
     public Dictionary<Image, AgentBehaviour> agentTargetInfo        = new Dictionary<Image, AgentBehaviour>();
 
     int agentAmount                                                 = 1;
-
+    int torchAmount                                                 = 4;
+    
     bool toggle;
     public bool isTeamPlayActive;
 
@@ -69,6 +72,28 @@ public class GameManagerBehaviour : MonoBehaviour
                 //agentUIPrefab.localPosition = Vector3.zero;
                 //agentUIPrefab.anchorMin = new Vector2(0, 1);
                 //agentUIPrefab.anchorMax = new Vector2(0, 1);
+            }
+
+            // Torch Instantiate
+            {
+                GameObject torchParent = new GameObject("TORCHES");
+                torchPrefab = Resources.Load<GameObject>("Prefabs/Torch");
+                for (int i = 0; i < torchAmount; i++)
+                {
+                    torchPrefab = Instantiate(torchPrefab);
+                    torchPrefab.transform.SetParent(torchParent.transform);
+                    torchPrefab.name = "Torch " + i;
+                    torches.Add(torchPrefab);
+
+                    if (i == 0)
+                        torchPrefab.transform.position = new Vector3(45, 2, -45);
+                    else if (i == 1)
+                        torchPrefab.transform.position = new Vector3(5, 2, -45);
+                    else if (i == 2)
+                        torchPrefab.transform.position = new Vector3(5, 2, -5);
+                    else if (i == 3)
+                        torchPrefab.transform.position = new Vector3(45, 2, -5);
+                }            
             }
 
             // Enemy Instantiate.
@@ -518,5 +543,10 @@ public class GameManagerBehaviour : MonoBehaviour
     public bool GetTeamPlayMode()
     {
         return isTeamPlayActive;
+    }
+
+    public List<GameObject> GetTorches()
+    {
+        return torches;
     }
 }

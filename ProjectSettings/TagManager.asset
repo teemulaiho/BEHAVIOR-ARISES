@@ -11,6 +11,7 @@ TagManager:
   - SafePoint
   - Enemy
   - Arena
+  - Torch
   layers:
   - Default
   - TransparentFX

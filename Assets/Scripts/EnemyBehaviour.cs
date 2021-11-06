@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class EnemyBehaviour : MonoBehaviour, Agent
 {
@@ -9,6 +10,10 @@ public class EnemyBehaviour : MonoBehaviour, Agent
 
     [SerializeField] ProjectileBehaviour         bulletPrefab;
     [SerializeField] List<ProjectileBehaviour>   bulletList;
+
+    [SerializeField] List<GameObject>            torchList;
+
+    [SerializeField] NavMeshAgent                navMeshAgent;
 
     [SerializeField] SphereCollider              rangeCollider;
     [SerializeField] List<AgentBehaviour>        agentsInRangeList;
@@ -35,6 +40,11 @@ public class EnemyBehaviour : MonoBehaviour, Agent
         bulletList.Add(bulletPrefab);
         bulletPrefab.gameObject.SetActive(false);
 
+        torchList                               = new List<GameObject>();
+        torchList.AddRange(gameManager.GetTorches());
+
+        navMeshAgent                            = GetComponent<NavMeshAgent>();
+
         healthBar                               = GetComponentInChildren<HealthbarBehaviour>();
 
         enemyMaxHealth                          = 1000f;
@@ -56,6 +66,7 @@ public class EnemyBehaviour : MonoBehaviour, Agent
             Selector root = new Selector();
 
             root.children.Add(AttackBranch());
+            root.children.Add(SearchBranch());
             bt_root = root; 
         }
     }
@@ -149,6 +160,57 @@ public class EnemyBehaviour : MonoBehaviour, Agent
         enemyAttackCoolDownDT = 0f;
     }
 
+    public Vector3 GetNavMeshDestination()
+    {
+        return navMeshAgent.destination;
+    }
+
+    public void SetNewNavMeshDestination()
+    {
+        int i = 0;
+        Vector3 newDest = Vector3.zero;
+
+        foreach (GameObject t in torchList)
+        {
+            if (navMeshAgent.destination.x == t.transform.position.x &&
+                navMeshAgent.destination.z == t.transform.position.z)
+            {
+                if (torchList.Count > 0)
+                {
+                    if (i < torchList.Count - 1)
+                    {
+                        newDest = torchList[i+1].transform.position;
+                        break;
+                    }
+                    else
+                    {
+                        newDest = torchList[0].transform.position;
+                        break;
+                    }
+                }
+            }
+
+            i++;
+        }
+
+        if (newDest == Vector3.zero)
+        {
+            newDest = torchList[0].transform.position;
+        }
+
+        navMeshAgent.SetDestination(newDest);
+    }
+
+    public bool CompareDestinationToTorchPositions(Vector3 destination)
+    {
+        foreach (GameObject go in torchList)
+        {
+            if (go.transform.position == destination)
+                return true;
+        }
+
+        return false;
+    }
 
     private void OnTriggerEnter(Collider other)
     {
@@ -186,5 +248,24 @@ public class EnemyBehaviour : MonoBehaviour, Agent
         AttackAgentInRange.children.Add(new NodeEnemyAttackTargetAgent());
 
         return AttackAgentInRange;
+    }
+
+    private Selector SearchBranch()
+    {
+        Selector SearchBranch = new Selector();
+        SearchBranch.children.Add(new NodeEnemyIsMyDestinationATorch());
+        SearchBranch.children.Add(SearchForAgent());
+
+        return SearchBranch;
+    }
+
+    private Sequencer SearchForAgent()
+    {
+        Sequencer SearchForAgent = new Sequencer();
+        SearchForAgent.children.Add(new NodeEnemyHasReachedDestination());
+        SearchForAgent.children.Add(new NodeEnemyMoveTowardsDestination());
+        SearchForAgent.children.Add(new NodeSetNewDestination());
+
+        return SearchForAgent;
     }
 }
