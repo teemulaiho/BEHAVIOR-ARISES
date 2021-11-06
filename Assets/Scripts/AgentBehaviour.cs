@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.AI;
 
 public enum AgentState
 {
@@ -44,6 +45,7 @@ public class AgentBehaviour : MonoBehaviour
     public Collider agentCollider;
     public Collision agentCollision;
     public ParticleSystem agentKickParticles;
+    public NavMeshAgent navMeshAgent;
 
     public HealthbarBehaviour healthBar;
     public TMP_Text scoreText;
@@ -107,6 +109,7 @@ public class AgentBehaviour : MonoBehaviour
         agentCollider = GetComponent<CapsuleCollider>();
         agentCollision = new Collision();
         agentKickParticles = GetComponentInChildren<ParticleSystem>();
+        navMeshAgent = GetComponent<NavMeshAgent>();
         originalRotation = transform.rotation;
         score = 0;
         collidingWithBall = false;
@@ -153,65 +156,19 @@ public class AgentBehaviour : MonoBehaviour
             {
                 Debug.Log("I Am A Lead Agent.");
 
-                Inverter HealthAbove25PercentInverter = new Inverter();
-                HealthAbove25PercentInverter.children.Add(new NodeCheckHealthAbove25Percent());
-
-                Inverter inverter = new Inverter();
-                inverter.children.Add(new NodeCheckHealthAbove50Percent());
-
-                Sequencer IsMyHealthBelow25Percent = new Sequencer();
-                IsMyHealthBelow25Percent.children.Add(HealthAbove25PercentInverter);
-                IsMyHealthBelow25Percent.children.Add(new NodeTargetSafeArea());
-                IsMyHealthBelow25Percent.children.Add(new NodeMoveTowardsTarget());
-                IsMyHealthBelow25Percent.children.Add(new NodeHealAgent());
-
-                Sequencer DoIHaveBall = new Sequencer();
-                DoIHaveBall.children.Add(new NodeDoIHaveBall());
-                DoIHaveBall.children.Add(new NodeTargetGoal());
-                DoIHaveBall.children.Add(new NodeMoveTowardsTarget());
-                DoIHaveBall.children.Add(new NodeScoreGoal());
-
-                Sequencer IsPowerupKick = new Sequencer();
-                IsPowerupKick.children.Add(new NodeIsPowerupKick());
-                IsPowerupKick.children.Add(new NodeIsPowerupCloseEnough());
-                IsPowerupKick.children.Add(new NodeTargetPowerup());
-                IsPowerupKick.children.Add(new NodeMoveTowardsTarget());
-                IsPowerupKick.children.Add(new NodeCapturePowerup());
-
-                Sequencer IsPowerupSpeed = new Sequencer();
-                IsPowerupSpeed.children.Add(new NodeIsPowerupSpeed());
-                IsPowerupSpeed.children.Add(new NodeIsPowerupCloseEnough());
-                IsPowerupSpeed.children.Add(new NodeTargetPowerup());
-                IsPowerupSpeed.children.Add(new NodeMoveTowardsTarget());
-                IsPowerupSpeed.children.Add(new NodeCapturePowerup());
-
-                Sequencer DoesSomeoneElseHaveBall = new Sequencer();
-                DoesSomeoneElseHaveBall.children.Add(new NodeIsBallCloseEnough());
-                DoesSomeoneElseHaveBall.children.Add(new NodeDoesSomeoneElseHaveBall());
-                DoesSomeoneElseHaveBall.children.Add(new NodeTargetAgent());
-                DoesSomeoneElseHaveBall.children.Add(new NodeMoveTowardsTarget());
-                DoesSomeoneElseHaveBall.children.Add(new NodeKickAgent());
-
-                Sequencer IsBallFree = new Sequencer();
-                IsBallFree.children.Add(new NodeIsBallCloseEnough());
-                IsBallFree.children.Add(new NodeIsBallFree());
-                IsBallFree.children.Add(new NodeTargetBall());
-                IsBallFree.children.Add(new NodeMoveTowardsTarget());
-                IsBallFree.children.Add(new NodeCaptureBall());
-
                 Selector HealthBranch = new Selector();
-                HealthBranch.children.Add(IsMyHealthBelow25Percent);
+                HealthBranch.children.Add(IsMyHealthBelow25Percent());
 
                 Selector BallBranch = new Selector();
-                BallBranch.children.Add(DoIHaveBall);
-                BallBranch.children.Add(DoesSomeoneElseHaveBall);
-                BallBranch.children.Add(IsBallFree);
+                BallBranch.children.Add(DoIHaveBall());
+                BallBranch.children.Add(DoesSomeoneElseHaveBall());
+                BallBranch.children.Add(IsBallFree());
 
                 Selector PowerupBranch = new Selector();
-                PowerupBranch.children.Add(IsPowerupSpeed);
-                PowerupBranch.children.Add(IsPowerupKick);
+                PowerupBranch.children.Add(IsPowerupSpeed());
+                PowerupBranch.children.Add(IsPowerupKick());
 
-                root.children.Add(IsMyHealthBelow25Percent);
+                root.children.Add(HealthBranch);
                 root.children.Add(BallBranch);
                 root.children.Add(PowerupBranch);
             }
@@ -220,25 +177,10 @@ public class AgentBehaviour : MonoBehaviour
             else if (agentRole == AgentRole.Support)
             {
                 Debug.Log("I am a Support Agent.");
-                
-                Sequencer DoesMyTeamHaveBall = new Sequencer();
-                DoesMyTeamHaveBall.children.Add(new NodeDoesMyTeamHaveBall());
-                DoesMyTeamHaveBall.children.Add(new NodeIsEnemyTeamAgentCloseEnough());
-                DoesMyTeamHaveBall.children.Add(new NodeTargetAgent());
-                DoesMyTeamHaveBall.children.Add(new NodeMoveTowardsTarget());
-
-                Inverter InvertNearbyEnemyResult = new Inverter();
-                InvertNearbyEnemyResult.children.Add(new NodeIsEnemyTeamAgentCloseEnough());
-
-                Sequencer AttackNearbyEnemyAgent = new Sequencer();
-                AttackNearbyEnemyAgent.children.Add(new NodeDoesMyTeamHaveBall());
-                AttackNearbyEnemyAgent.children.Add(InvertNearbyEnemyResult);
-                AttackNearbyEnemyAgent.children.Add(new NodeMoveTowardsTarget());
-                AttackNearbyEnemyAgent.children.Add(new NodeKickAgent());
 
                 Selector defenceBranch = new Selector();
-                defenceBranch.children.Add(DoesMyTeamHaveBall);
-                defenceBranch.children.Add(AttackNearbyEnemyAgent);
+                defenceBranch.children.Add(DoesMyTeamHaveBall());
+                defenceBranch.children.Add(AttackNearbyEnemyAgent());
 
                 root.children.Add(defenceBranch);
             }
@@ -309,7 +251,7 @@ public class AgentBehaviour : MonoBehaviour
                 {
                     targetAgent = targetBall.agent;
                     agentState = AgentState.Attacking;
-                }           
+                }
         }
 
 
@@ -512,7 +454,7 @@ public class AgentBehaviour : MonoBehaviour
             {
                 targetBall.agent = null;
             }
-            
+
             //targetBall = null;
         }
     }
@@ -522,7 +464,7 @@ public class AgentBehaviour : MonoBehaviour
         if (targetAgent != null)
             targetAgent = null;
     }
-   
+
     public void RemoveTargetPowerup()
     {
         if (targetPowerup != null)
@@ -575,7 +517,7 @@ public class AgentBehaviour : MonoBehaviour
             if (collidingWithSafePoint)
                 return true;
         }
-        
+
         return false;
     }
 
@@ -594,15 +536,103 @@ public class AgentBehaviour : MonoBehaviour
         return targetType;
     }
 
-    //// Start is called before the first frame update
-    //void Start()
-    //{
 
-    //}
+    private Sequencer IsMyHealthBelow25Percent()
+    {
+        Inverter HealthAbove25PercentInverter = new Inverter();
+        HealthAbove25PercentInverter.children.Add(new NodeCheckHealthAbove25Percent());
 
-    //// Update is called once per frame
-    //void Update()
-    //{
+        Sequencer IsMyHealthBelow25Percent = new Sequencer();
+        IsMyHealthBelow25Percent.children.Add(HealthAbove25PercentInverter);
+        IsMyHealthBelow25Percent.children.Add(new NodeTargetSafeArea());
+        IsMyHealthBelow25Percent.children.Add(new NodeMoveTowardsTarget());
+        IsMyHealthBelow25Percent.children.Add(new NodeHealAgent());
 
-    //}
+        return IsMyHealthBelow25Percent;
+    }
+
+
+    private Sequencer DoIHaveBall()
+    {
+        Sequencer DoIHaveBall = new Sequencer();
+        DoIHaveBall.children.Add(new NodeDoIHaveBall());
+        DoIHaveBall.children.Add(new NodeTargetGoal());
+        DoIHaveBall.children.Add(new NodeMoveTowardsTarget());
+        DoIHaveBall.children.Add(new NodeScoreGoal());
+
+        return DoIHaveBall;
+    }
+
+    private Sequencer IsPowerupKick()
+    {
+        Sequencer IsPowerupKick = new Sequencer();
+        IsPowerupKick.children.Add(new NodeIsPowerupKick());
+        IsPowerupKick.children.Add(new NodeIsPowerupCloseEnough());
+        IsPowerupKick.children.Add(new NodeTargetPowerup());
+        IsPowerupKick.children.Add(new NodeMoveTowardsTarget());
+        IsPowerupKick.children.Add(new NodeCapturePowerup());
+
+        return IsPowerupKick;
+    }
+
+    private Sequencer IsPowerupSpeed()
+    {
+        Sequencer IsPowerupSpeed = new Sequencer();
+        IsPowerupSpeed.children.Add(new NodeIsPowerupSpeed());
+        IsPowerupSpeed.children.Add(new NodeIsPowerupCloseEnough());
+        IsPowerupSpeed.children.Add(new NodeTargetPowerup());
+        IsPowerupSpeed.children.Add(new NodeMoveTowardsTarget());
+        IsPowerupSpeed.children.Add(new NodeCapturePowerup());
+
+        return IsPowerupSpeed;
+    }
+
+    private Sequencer DoesSomeoneElseHaveBall()
+    {
+        Sequencer DoesSomeoneElseHaveBall = new Sequencer();
+        DoesSomeoneElseHaveBall.children.Add(new NodeIsBallCloseEnough());
+        DoesSomeoneElseHaveBall.children.Add(new NodeDoesSomeoneElseHaveBall());
+        DoesSomeoneElseHaveBall.children.Add(new NodeTargetAgent());
+        DoesSomeoneElseHaveBall.children.Add(new NodeMoveTowardsTarget());
+        DoesSomeoneElseHaveBall.children.Add(new NodeKickAgent());
+
+        return DoesSomeoneElseHaveBall;
+    }
+
+    private Sequencer IsBallFree()
+    {
+        Sequencer IsBallFree = new Sequencer();
+        IsBallFree.children.Add(new NodeIsBallCloseEnough());
+        IsBallFree.children.Add(new NodeIsBallFree());
+        IsBallFree.children.Add(new NodeTargetBall());
+        IsBallFree.children.Add(new NodeMoveTowardsTarget());
+        IsBallFree.children.Add(new NodeCaptureBall());
+
+        return IsBallFree;
+    }
+
+    private Sequencer DoesMyTeamHaveBall()
+    {
+        Sequencer DoesMyTeamHaveBall = new Sequencer();
+        DoesMyTeamHaveBall.children.Add(new NodeDoesMyTeamHaveBall());
+        DoesMyTeamHaveBall.children.Add(new NodeIsEnemyTeamAgentCloseEnough());
+        DoesMyTeamHaveBall.children.Add(new NodeTargetAgent());
+        DoesMyTeamHaveBall.children.Add(new NodeMoveTowardsTarget());
+
+        return DoesMyTeamHaveBall;
+    }
+
+    private Sequencer AttackNearbyEnemyAgent()
+    {
+        Inverter InvertNearbyEnemyResult = new Inverter();
+        InvertNearbyEnemyResult.children.Add(new NodeIsEnemyTeamAgentCloseEnough());
+
+        Sequencer AttackNearbyEnemyAgent = new Sequencer();
+        AttackNearbyEnemyAgent.children.Add(new NodeDoesMyTeamHaveBall());
+        AttackNearbyEnemyAgent.children.Add(InvertNearbyEnemyResult);
+        AttackNearbyEnemyAgent.children.Add(new NodeMoveTowardsTarget());
+        AttackNearbyEnemyAgent.children.Add(new NodeKickAgent());
+
+        return AttackNearbyEnemyAgent;
+    }
 }

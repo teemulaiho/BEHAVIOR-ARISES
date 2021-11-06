@@ -227,11 +227,14 @@ public class NodeMoveTowardsTarget : BT_Node
     public override ReturnState Run(AgentBehaviour agent)
     {
         //Debug.Log(Vector3.Distance(agent.transform.position, agent.targetPos));
-        agent.transform.LookAt(agent.targetPos);
+        //agent.transform.LookAt(agent.targetPos);
 
         if (agent.targetPos == agent.targetGoal.transform.position)
         {
-            agent.transform.position = Vector3.MoveTowards(agent.transform.position, agent.targetPos, agent.agentSpeed * Time.deltaTime);
+            //agent.transform.position = Vector3.MoveTowards(agent.transform.position, agent.targetPos, agent.agentSpeed * Time.deltaTime);
+            
+            if (agent.navMeshAgent.destination != agent.targetPos)
+                agent.navMeshAgent.SetDestination(agent.targetPos);
 
             if (agent.transform.position != agent.targetGoal.transform.position)
             {
@@ -251,7 +254,10 @@ public class NodeMoveTowardsTarget : BT_Node
         }
         else
         {
-            agent.transform.position = Vector3.MoveTowards(agent.transform.position, agent.targetPos, agent.agentSpeed * Time.deltaTime);
+            //agent.transform.position = Vector3.MoveTowards(agent.transform.position, agent.targetPos, agent.agentSpeed * Time.deltaTime);
+
+            if (agent.navMeshAgent.destination != agent.targetPos)
+                agent.navMeshAgent.SetDestination(agent.targetPos);
             return ReturnState.RUNNING;
         }
     }

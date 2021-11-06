@@ -19,6 +19,7 @@ public class GameManagerBehaviour : MonoBehaviour
     PowerupBehaviour powerupPrefab;
     CubeBehaviour cubePrefab;
     GameObject safepointPrefab;
+    RectTransform agentUIPrefab;
 
     List<AgentBehaviour> agents = new List<AgentBehaviour>();
     List<BallBehaviour> balls = new List<BallBehaviour>();
@@ -36,7 +37,7 @@ public class GameManagerBehaviour : MonoBehaviour
     public Dictionary<TMP_Text, AgentBehaviour> scoreInfo = new Dictionary<TMP_Text, AgentBehaviour>();
     public Dictionary<Image, AgentBehaviour> agentTargetInfo = new Dictionary<Image, AgentBehaviour>();
 
-    int agentAmount = 4;
+    int agentAmount = 2;
 
     bool toggle;
     public bool isTeamPlayActive;
@@ -58,6 +59,15 @@ public class GameManagerBehaviour : MonoBehaviour
 
         // Instantiate GameObjects
         {
+            // UI Instantiate
+            {
+                agentUIPrefab = Resources.Load<RectTransform>("Prefabs/UI/AgentUI");
+                agentUIPrefab = Instantiate(agentUIPrefab);
+                agentUIPrefab.transform.parent = screenUI.transform;
+                //agentUIPrefab.anchoredPosition.Set(0, 0);
+                agentUIPrefab.localPosition = Vector3.zero;
+            }
+
             // Agent Instantiate.
             {
                 GameObject agentParent = new GameObject("AGENTS");
@@ -105,15 +115,15 @@ public class GameManagerBehaviour : MonoBehaviour
 
             // Cube Instantiate.
             {
-                GameObject cubeParent = new GameObject("CUBES");
-                cubePrefab = Resources.Load<CubeBehaviour>("Prefabs/Cube");
-                for (int i = 0; i < 100; i++)
-                {
-                    cubePrefab = Instantiate(cubePrefab);
-                    cubePrefab.transform.SetParent(cubeParent.transform);
-                    cubePrefab.transform.position = new Vector3(Random.Range(1, 50), Random.Range(2, 10), Random.Range(-1, -50));
-                    cubes.Add(cubePrefab);
-                }
+                //GameObject cubeParent = new GameObject("CUBES");
+                //cubePrefab = Resources.Load<CubeBehaviour>("Prefabs/Cube");
+                //for (int i = 0; i < 100; i++)
+                //{
+                //    cubePrefab = Instantiate(cubePrefab);
+                //    cubePrefab.transform.SetParent(cubeParent.transform);
+                //    cubePrefab.transform.position = new Vector3(Random.Range(1, 50), Random.Range(2, 10), Random.Range(-1, -50));
+                //    cubes.Add(cubePrefab);
+                //}
             }
 
             // Safe Point Instantiate
