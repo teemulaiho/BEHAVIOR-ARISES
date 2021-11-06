@@ -348,6 +348,11 @@ public class AgentBehaviour : MonoBehaviour, Agent
         return targetType;
     }
 
+    public float GetAgentCurrentHealth()
+    {
+        return agentCurrentHealth;
+    }
+
     private Selector HealthBranch()
     {
         Selector HealthBranch = new Selector();
