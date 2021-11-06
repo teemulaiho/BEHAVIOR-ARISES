@@ -9,10 +9,11 @@ public class GameManagerBehaviour : MonoBehaviour
     [SerializeField] Canvas screenUI;
     Canvas screenUIPrefab;
 
-    public HealthbarBehaviour[] healthBars;
+    public HealthbarBehaviour[]healthBars;
     public TMP_Text[] agentScoreTexts;
     public Image[] agentImages;
 
+    EnemyBehaviour enemyPrefab;
     AgentBehaviour agentPrefab;
     BallBehaviour ballPrefab;
     GoalBehaviour goalPrefab;
@@ -21,23 +22,24 @@ public class GameManagerBehaviour : MonoBehaviour
     GameObject safepointPrefab;
     RectTransform agentUIPrefab;
 
-    List<AgentBehaviour> agents = new List<AgentBehaviour>();
-    List<BallBehaviour> balls = new List<BallBehaviour>();
-    List<GoalBehaviour> goals = new List<GoalBehaviour>();
-    List<PowerupBehaviour> powerups = new List<PowerupBehaviour>();
-    List<CubeBehaviour> cubes = new List<CubeBehaviour>();
-    List<GameObject> safepoints = new List<GameObject>();
+    List<EnemyBehaviour> enemies                                    = new List<EnemyBehaviour>();
+    List<AgentBehaviour> agents                                     = new List<AgentBehaviour>();
+    List<BallBehaviour> balls                                       = new List<BallBehaviour>();
+    List<GoalBehaviour> goals                                       = new List<GoalBehaviour>();
+    List<PowerupBehaviour> powerups                                 = new List<PowerupBehaviour>();
+    List<CubeBehaviour> cubes                                       = new List<CubeBehaviour>();
+    List<GameObject> safepoints                                     = new List<GameObject>();
 
-    public List<Sprite> uiSprites = new List<Sprite>();
+    public List<Sprite> uiSprites                                   = new List<Sprite>();
     
-    public Dictionary<AgentBehaviour, BallBehaviour> chaseInfo = new Dictionary<AgentBehaviour, BallBehaviour>();
-    public Dictionary<AgentBehaviour, BallBehaviour> captureInfo = new Dictionary<AgentBehaviour, BallBehaviour>();
-    public Dictionary<AgentBehaviour, GoalBehaviour> goalInfo = new Dictionary<AgentBehaviour, GoalBehaviour>();
+    public Dictionary<AgentBehaviour, BallBehaviour> chaseInfo      = new Dictionary<AgentBehaviour, BallBehaviour>();
+    public Dictionary<AgentBehaviour, BallBehaviour> captureInfo    = new Dictionary<AgentBehaviour, BallBehaviour>();
+    public Dictionary<AgentBehaviour, GoalBehaviour> goalInfo       = new Dictionary<AgentBehaviour, GoalBehaviour>();
 
-    public Dictionary<TMP_Text, AgentBehaviour> scoreInfo = new Dictionary<TMP_Text, AgentBehaviour>();
-    public Dictionary<Image, AgentBehaviour> agentTargetInfo = new Dictionary<Image, AgentBehaviour>();
+    public Dictionary<TMP_Text, AgentBehaviour> scoreInfo           = new Dictionary<TMP_Text, AgentBehaviour>();
+    public Dictionary<Image, AgentBehaviour> agentTargetInfo        = new Dictionary<Image, AgentBehaviour>();
 
-    int agentAmount = 2;
+    int agentAmount                                                 = 1;
 
     bool toggle;
     public bool isTeamPlayActive;
@@ -61,11 +63,20 @@ public class GameManagerBehaviour : MonoBehaviour
         {
             // UI Instantiate
             {
-                agentUIPrefab = Resources.Load<RectTransform>("Prefabs/UI/AgentUI");
-                agentUIPrefab = Instantiate(agentUIPrefab);
-                agentUIPrefab.transform.parent = screenUI.transform;
-                //agentUIPrefab.anchoredPosition.Set(0, 0);
-                agentUIPrefab.localPosition = Vector3.zero;
+                //agentUIPrefab = Resources.Load<RectTransform>("Prefabs/UI/AgentUI");
+                //agentUIPrefab = Instantiate(agentUIPrefab);
+                //agentUIPrefab.transform.parent = screenUI.transform;
+                //agentUIPrefab.localPosition = Vector3.zero;
+                //agentUIPrefab.anchorMin = new Vector2(0, 1);
+                //agentUIPrefab.anchorMax = new Vector2(0, 1);
+            }
+
+            // Enemy Instantiate.
+            {
+                enemyPrefab = Resources.Load<EnemyBehaviour>("Prefabs/Enemy");
+                enemyPrefab = Instantiate(enemyPrefab);
+                enemyPrefab.transform.position = new Vector3(25, 2, -25);
+                enemies.Add(enemyPrefab);
             }
 
             // Agent Instantiate.
@@ -137,6 +148,11 @@ public class GameManagerBehaviour : MonoBehaviour
 
         // Initialize GameObjects
         {
+            for (int i = 0; i < enemies.Count; i++)
+            {
+                enemies[i].Init(this, i);
+            }
+
             for (int i = 0; i < agents.Count; i++)
             {
                 goalInfo[agents[i]] = goals[0];
@@ -205,6 +221,11 @@ public class GameManagerBehaviour : MonoBehaviour
             Debug.Log("toggle: " + toggle);
         }
 
+        foreach (EnemyBehaviour e in enemies)
+        {
+            e.EnemyUpdate();
+        }
+
         for (int i = 0; i < agents.Count; i++)
         {
             agents[i].AgentUpdate();
@@ -269,39 +290,6 @@ public class GameManagerBehaviour : MonoBehaviour
                     }  
   
                 }
-
-                //int index = 0; 
-                //foreach(AgentBehaviour a in agents)
-                //{
-                //    if (a.GetTargetType() == TargetType.Ball)
-                //    {
-                //        i.sprite = uiSprites[4];
-                //    }
-                //    else if (a.GetTargetType() == TargetType.Goal)
-                //    {
-                //        i.sprite = uiSprites[7];
-                //    }
-                //    else if (a.GetTargetType() == TargetType.Safe)
-                //    {
-                //        i.sprite = uiSprites[6];
-                //    }
-                //    else if (a.GetTargetType() == TargetType.Powerup)
-                //    {
-                //        i.sprite = uiSprites[8];
-                //    }
-                //    else if (a.GetTargetType() == TargetType.Agent)
-                //    {
-                //        i.sprite = uiSprites[0];
-                //    }
-
-
-                //    //if (a == agentTargetInfo[i].GetTargetAgent())
-                //    //{
-                //    //    i.sprite = uiSprites[index];
-                //    //}
-
-                //    index++;
-                //}
             }
         }
 

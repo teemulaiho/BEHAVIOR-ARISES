@@ -33,95 +33,97 @@ public enum TargetType
     Powerup
 }
 
-public class AgentBehaviour : MonoBehaviour
+public class AgentBehaviour : MonoBehaviour, Agent
 {
-    public GameManagerBehaviour gameManager;
-    public int agentID;
-    public AgentState agentState;
-    public AgentRole agentRole;
-    public PowerupState powerupState;
-    public MeshRenderer meshRenderer;
-    public Rigidbody rb;
-    public Collider agentCollider;
-    public Collision agentCollision;
-    public ParticleSystem agentKickParticles;
-    public NavMeshAgent navMeshAgent;
+    public GameManagerBehaviour         gameManager;
+    public int                          agentID;
+    public AgentState                   agentState;
+    public AgentRole                    agentRole;
+    public PowerupState                 powerupState;
+    public MeshRenderer                 meshRenderer;
+    public Rigidbody                    rb;
+    public Collider                     agentCollider;
+    public Collision                    agentCollision;
+    public ParticleSystem               agentKickParticles;
+    public NavMeshAgent                 navMeshAgent;
 
-    public HealthbarBehaviour healthBar;
-    public TMP_Text scoreText;
+    public HealthbarBehaviour           healthBar;
+    public TMP_Text                     scoreText;
 
-    public TargetType targetType;
-    public GoalBehaviour targetGoal;
-    public BallBehaviour targetBall;
-    public AgentBehaviour targetAgent;
-    public PowerupBehaviour targetPowerup;
-    public GameObject targetSafePoint;
+    public TargetType                   targetType;
+    public GoalBehaviour                targetGoal;
+    public BallBehaviour                targetBall;
+    public AgentBehaviour               targetAgent;
+    public PowerupBehaviour             targetPowerup;
+    public GameObject                   targetSafePoint;
 
-    public Vector3 targetPos;
-    public Vector3 safePos;
-    public Quaternion originalRotation;
-    public float agentSpeed;
-    public float agentRecovery;
-    public float agentMaxHealth;
-    public float agentCurrentHealth;
-    public float recoveryTime;
-    public int score;
-    public int team;
+    public Vector3                      targetPos;
+    public Vector3                      safePos;
+    public Quaternion                   originalRotation;
 
-    public Vector3 kickForce;
-    public Vector3 agentScale;
+    public float                        agentSpeed;
+    public float                        agentRecovery;
+    public float                        agentMaxHealth;
+    public float                        agentCurrentHealth;
+    public float                        recoveryTime;
 
-    public bool collidingWithBall;
-    public bool collidingWithPowerup;
-    public bool collidingWithAgent;
-    public bool collidingWithSafePoint;
-    public bool isHealing;
+    public int                          score;
+    public int                          team;
+
+    public Vector3                      kickForce;
+    public Vector3                      agentScale;
+
+    public bool                         collidingWithBall;
+    public bool                         collidingWithPowerup;
+    public bool                         collidingWithAgent;
+    public bool                         collidingWithSafePoint;
+    public bool                         isHealing;
 
     // Agent Behaviour Tree Begin
-    public BT_Node bt_root;
-    //static Selector bt_root;
+    public BT_Node                      bt_root;
     // Agent Behaviour Tree End
 
     public void Init(GameManagerBehaviour p_gameManager, int ID)
     {
-        //Debug.Log("Init AgentBehaviour.");
+        this.name                       = "Agent";
+        gameManager                     = p_gameManager;
+        agentID                         = ID;
+        agentState                      = AgentState.Idle;
+        //agentRole                     = gameManager.GetRole(team);
+        agentRole                       = AgentRole.Lead;
+        targetType                      = TargetType.None;
+        targetBall                      = null;
+        targetAgent                     = null;
+        targetPowerup                   = gameManager.GetPowerup();
+        agentSpeed                      = 2.5f;
+        agentRecovery                   = 2f;
+        agentMaxHealth                  = 1000f;
+        agentCurrentHealth              = agentMaxHealth;
+        recoveryTime                    = 0;
+        score                           = 0;
 
-        this.name = "Agent";
-        gameManager = p_gameManager;
-        agentID = ID;
-        agentState = AgentState.Idle;
-        //agentRole = gameManager.GetRole(team);
-        agentRole = AgentRole.Lead;
-        //Debug.Log(agentRole);
-        targetType = TargetType.None;
-        targetBall = null;
-        targetAgent = null;
-        targetPowerup = gameManager.GetPowerup();
-        agentSpeed = 2.5f;
-        agentRecovery = 2f;
-        agentMaxHealth = 1000f;
-        agentCurrentHealth = agentMaxHealth;
+        targetGoal                      = gameManager.GetGoal(this);
+        meshRenderer                    = GetComponent<MeshRenderer>();
+        rb                              = GetComponent<Rigidbody>();
+        agentCollider                   = GetComponent<CapsuleCollider>();
+        agentCollision                  = new Collision();
+        agentKickParticles              = GetComponentInChildren<ParticleSystem>();
+        navMeshAgent                    = GetComponent<NavMeshAgent>();
+        healthBar                       = GetComponentInChildren<HealthbarBehaviour>();
+        originalRotation                = transform.rotation;
+
+        collidingWithBall               = false;
+        collidingWithPowerup            = false;
+        collidingWithAgent              = false;
+
+        kickForce                       = new Vector3(50, 0, 50);
+        agentScale                      = new Vector3(1, 1, 1);
+
+        targetBall                      = gameManager.GetBall();
+        targetSafePoint                 = gameManager.GetSafePoint();
+        safePos                         = targetSafePoint.transform.position;
+
         healthBar.SetMaxHealth(agentMaxHealth);
-        recoveryTime = 0;
-        targetGoal = gameManager.GetGoal(this);
-        meshRenderer = GetComponent<MeshRenderer>();
-        rb = GetComponent<Rigidbody>();
-        agentCollider = GetComponent<CapsuleCollider>();
-        agentCollision = new Collision();
-        agentKickParticles = GetComponentInChildren<ParticleSystem>();
-        navMeshAgent = GetComponent<NavMeshAgent>();
-        originalRotation = transform.rotation;
-        score = 0;
-        collidingWithBall = false;
-        collidingWithPowerup = false;
-        collidingWithAgent = false;
-
-        kickForce = new Vector3(50, 0, 50);
-        agentScale = new Vector3(1, 1, 1);
-
-        targetBall = gameManager.GetBall();
-        targetSafePoint = gameManager.GetSafePoint();
-        safePos = targetSafePoint.transform.position;
 
         if (gameManager.GetTeamPlayMode())
         {
@@ -156,21 +158,9 @@ public class AgentBehaviour : MonoBehaviour
             {
                 Debug.Log("I Am A Lead Agent.");
 
-                Selector HealthBranch = new Selector();
-                HealthBranch.children.Add(IsMyHealthBelow25Percent());
-
-                Selector BallBranch = new Selector();
-                BallBranch.children.Add(DoIHaveBall());
-                BallBranch.children.Add(DoesSomeoneElseHaveBall());
-                BallBranch.children.Add(IsBallFree());
-
-                Selector PowerupBranch = new Selector();
-                PowerupBranch.children.Add(IsPowerupSpeed());
-                PowerupBranch.children.Add(IsPowerupKick());
-
-                root.children.Add(HealthBranch);
-                root.children.Add(BallBranch);
-                root.children.Add(PowerupBranch);
+                root.children.Add(HealthBranch());
+                root.children.Add(BallBranch());
+                root.children.Add(PowerupBranch());
             }
 
             // Support Agent Behaviour Tree
@@ -178,11 +168,7 @@ public class AgentBehaviour : MonoBehaviour
             {
                 Debug.Log("I am a Support Agent.");
 
-                Selector defenceBranch = new Selector();
-                defenceBranch.children.Add(DoesMyTeamHaveBall());
-                defenceBranch.children.Add(AttackNearbyEnemyAgent());
-
-                root.children.Add(defenceBranch);
+                root.children.Add(DefenceBranch());
             }
 
             // Healer Agent
@@ -219,115 +205,6 @@ public class AgentBehaviour : MonoBehaviour
         }
 
         bt_root.Run(this);
-
-        //Sense();
-        //Act();
-    }
-
-    void Sense()
-    {
-        if (agentState == AgentState.Idle)
-        {
-            recoveryTime += Time.deltaTime;
-
-            if (recoveryTime > agentRecovery)
-            {
-                targetBall = null;
-                recoveryTime = 0;
-                //colliding = false;
-            }
-        }
-
-        if (targetBall == null)
-        {
-            targetBall = gameManager.GetBall();
-            agentState = AgentState.Fetching;
-        }
-
-        if (targetBall.agent != this)
-        {
-            if (targetBall != null)
-                if (targetBall.agent != null)
-                {
-                    targetAgent = targetBall.agent;
-                    agentState = AgentState.Attacking;
-                }
-        }
-
-
-
-        //Debug.Log("Rotation.eulerAngles.z: " + transform.rotation.eulerAngles.z);
-
-        //if (transform.rotation.eulerAngles.z < -45 )
-        //{
-        //    agentState = AgentState.Fallen;
-        //    Debug.Log("Rotation.eulerAngles.z: " + transform.rotation.eulerAngles.z);
-        //}
-        //else if (transform.rotation.eulerAngles.z > 45)
-        //{
-        //    agentState = AgentState.Fallen;
-        //    Debug.Log("Rotation.eulerAngles.z: " + transform.rotation.eulerAngles.z);
-        //}
-        //else
-        //{
-        //    agentState = AgentState.Fetching;
-        //}
-
-        //if (targetBall == null && agentState != AgentState.Returning)
-        //{
-        //    //targetBall = gameManager.GetFreeBall(this);
-        //    targetBall = gameManager.GetBall();
-        //    targetPos = targetBall.transform.position;            
-        //    gameManager.UpdateChaseData(this, targetBall);
-        //    agentState = AgentState.Fetching;
-        //}
-
-        //if (agentState == AgentState.Fetching && Vector3.Distance(transform.position, targetBall.transform.position) <= 2)
-        //{
-        //    gameManager.UpdateCaptureData(this, targetBall);
-        //    agentState = AgentState.Returning;
-        //    targetPos = targetGoal.transform.position;
-        //}
-    }
-
-    void Decide()
-    {
-
-    }
-
-    void Act()
-    {
-        //if (!colliding)
-        //{
-        //    if (agentState != AgentState.Fallen)
-        //    {
-        //        if (agentState == AgentState.Fetching)
-        //        {
-        //            transform.position = Vector3.MoveTowards(transform.position, targetBall.transform.position, agentSpeed * Time.deltaTime);
-        //        }
-        //        else if (agentState == AgentState.Returning)
-        //        {
-        //            transform.position = Vector3.MoveTowards(transform.position, targetGoal.transform.position, agentSpeed * Time.deltaTime);
-        //        }
-        //        else if (agentState == AgentState.Attacking)
-        //        {
-        //            transform.position = Vector3.MoveTowards(transform.position, targetAgent.transform.position, 1.1f * agentSpeed * Time.deltaTime);
-        //        }
-        //        else
-        //            transform.position = Vector3.MoveTowards(transform.position, targetPos, Time.deltaTime * agentSpeed);
-        //    }
-        //    else
-        //    {
-        //        rigidBody.useGravity = false;
-        //        rigidBody.angularVelocity.Set(0, 0, 0);
-        //        //transform.rotation = Quaternion.Slerp(transform.rotation, originalRotation, Time.deltaTime * agentSpeed);
-        //        transform.Rotate(0, 0, 1);
-        //    }
-        //}
-        //else
-        //{
-        //    agentState = AgentState.Idle;
-        //}
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -344,54 +221,6 @@ public class AgentBehaviour : MonoBehaviour
         {
             collidingWithAgent = true;
         }
-
-
-        //Debug.Log(agentCollision.gameObject.tag);
-
-        //if (agentCollision.gameObject.CompareTag("Agent"))
-        //{
-        //    if (targetAgent != null)
-        //    {
-        //        if (collision.collider == targetAgent.agentCollider)
-        //            colliding = true;
-        //    }   
-        //}
-
-
-        //if (collision.gameObject.CompareTag("Ball") &&
-        //    agentState != AgentState.Attacking &&
-        //    agentState != AgentState.Idle)
-        //{
-        //    gameManager.UpdateCaptureData(this, targetBall);
-        //    agentState = AgentState.Returning;
-        //    targetPos = targetGoal.transform.position;
-        //}
-
-        //if (collision.gameObject.CompareTag("Agent"))
-        //{
-        //    colliding = true;
-        //    if (agentState == AgentState.Attacking)
-        //    {
-        //        collision.collider.attachedRigidbody.AddExplosionForce(2000f, transform.position, 10f);
-        //        agentState = AgentState.Idle;
-        //        agentRecovery = 1f;
-        //    }
-        //    else if (agentState == AgentState.Fetching)
-        //    {
-        //        agentRecovery = 3f;
-        //    }
-        //    else if (agentState == AgentState.Returning)
-        //    {
-        //        Debug.Log("AgentBehaviour.cs - Calling RemoveCaptureData. " + meshRenderer.material.color);
-        //        gameManager.RemoveCaptureData(this);
-        //        agentRecovery = 3f;
-        //    }
-        //    else if (agentState == AgentState.Idle)
-        //    {
-        //        collision.collider.attachedRigidbody.AddExplosionForce(1000f, transform.position, 10f);
-        //        agentRecovery = 3f;
-        //    }
-        //}
     }
 
     private void OnCollisionExit(Collision collision)
@@ -421,24 +250,9 @@ public class AgentBehaviour : MonoBehaviour
             collidingWithSafePoint = false;
     }
 
-    //private void OnTriggerEnter(Collider other)
-    //{
-    //    agentCollider = other;
-
-    //    if (other.gameObject.CompareTag("Powerup"))
-    //    {
-    //        if (targetAgent != null)
-    //        {
-    //            if (other == targetAgent.agentCollider)
-    //                colliding = true;
-    //        }
-    //    }
-    //}
-
     public void AddScore()
     {
         score++;
-        //Debug.Log("Agent " + meshRenderer.material.color.ToString() + " Score: " + score);
     }
 
     public int GetScore()
@@ -454,8 +268,6 @@ public class AgentBehaviour : MonoBehaviour
             {
                 targetBall.agent = null;
             }
-
-            //targetBall = null;
         }
     }
 
@@ -536,6 +348,41 @@ public class AgentBehaviour : MonoBehaviour
         return targetType;
     }
 
+    private Selector HealthBranch()
+    {
+        Selector HealthBranch = new Selector();
+        HealthBranch.children.Add(IsMyHealthBelow25Percent());
+
+        return HealthBranch;
+    }
+
+    private Selector BallBranch()
+    {
+        Selector BallBranch = new Selector();
+        BallBranch.children.Add(DoIHaveBall());
+        BallBranch.children.Add(DoesSomeoneElseHaveBall());
+        BallBranch.children.Add(IsBallFree());
+
+        return BallBranch;
+    }
+
+    private Selector PowerupBranch()
+    {
+        Selector PowerupBranch = new Selector();
+        PowerupBranch.children.Add(IsPowerupSpeed());
+        PowerupBranch.children.Add(IsPowerupKick());
+
+        return PowerupBranch;
+    }
+    
+    private Selector DefenceBranch()
+    {
+        Selector DefenceBranch = new Selector();
+        DefenceBranch.children.Add(DoesMyTeamHaveBall());
+        DefenceBranch.children.Add(AttackNearbyEnemyAgent());
+
+        return DefenceBranch;
+    }
 
     private Sequencer IsMyHealthBelow25Percent()
     {
@@ -550,7 +397,6 @@ public class AgentBehaviour : MonoBehaviour
 
         return IsMyHealthBelow25Percent;
     }
-
 
     private Sequencer DoIHaveBall()
     {
