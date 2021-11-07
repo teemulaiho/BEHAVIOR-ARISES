@@ -14,29 +14,31 @@ public enum EnemyState
 
 public class EnemyBehaviour : MonoBehaviour, Agent
 {
-    [SerializeField] GameManagerBehaviour        gameManager;
-    [SerializeField] int                         enemyID;
-    [SerializeField] EnemyState                  enemyState;
+    [SerializeField] GameManagerBehaviour       gameManager;
+    [SerializeField] int                        enemyID;
+    [SerializeField] EnemyState                 enemyState;
 
-    [SerializeField] ProjectileBehaviour         bulletPrefab;
-    [SerializeField] List<ProjectileBehaviour>   bulletList;
+    [SerializeField] ProjectileBehaviour        bulletPrefab;
+    [SerializeField] List<ProjectileBehaviour>  bulletList;
 
-    [SerializeField] List<TorchBehaviour>        torchList;
+    [SerializeField] List<TorchBehaviour>       torchList;
 
-    [SerializeField] NavMeshAgent                navMeshAgent;
+    [SerializeField] BallBehaviour              ball;
 
-    [SerializeField] SphereCollider              rangeCollider;
-    [SerializeField] List<AgentBehaviour>        agentsInRangeList;
-    [SerializeField] AgentBehaviour              targetAgent;
+    [SerializeField] NavMeshAgent               navMeshAgent;
 
-    [SerializeField] public HealthbarBehaviour   healthBar;
-    [SerializeField] public float                enemyMaxHealth;
-    [SerializeField] public float                enemyCurrentHealth;
-    [SerializeField] public float                enemyRange;
-    [SerializeField] public float                enemyAttackCooldown;
-    [SerializeField] public float                enemyAttackCoolDownDT;
+    [SerializeField] SphereCollider             rangeCollider;
+    [SerializeField] List<AgentBehaviour>       agentsInRangeList;
+    [SerializeField] AgentBehaviour             targetAgent;
 
-    [SerializeField] public BT_Node              bt_root;
+    [SerializeField] public HealthbarBehaviour  healthBar;
+    [SerializeField] public float               enemyMaxHealth;
+    [SerializeField] public float               enemyCurrentHealth;
+    [SerializeField] public float               enemyRange;
+    [SerializeField] public float               enemyAttackCooldown;
+    [SerializeField] public float               enemyAttackCoolDownDT;
+
+    [SerializeField] public BT_Node             bt_root;
 
 
     public void Init(GameManagerBehaviour gm, int id)
@@ -54,6 +56,8 @@ public class EnemyBehaviour : MonoBehaviour, Agent
 
         torchList                               = new List<TorchBehaviour>();
         torchList.AddRange(gameManager.GetTorches());
+
+        ball                                    = gameManager.GetBall();
 
         navMeshAgent                            = GetComponent<NavMeshAgent>();
 
@@ -79,6 +83,7 @@ public class EnemyBehaviour : MonoBehaviour, Agent
 
             root.children.Add(AttackBranch());
             root.children.Add(TorchBranch());
+            root.children.Add(BallBranch());
             bt_root = root; 
         }
     }
@@ -301,6 +306,16 @@ public class EnemyBehaviour : MonoBehaviour, Agent
         return false;
     }
 
+    public bool CheckIfBallAwayFromBase()
+    {
+        float dist = Vector3.Distance(ball.transform.position, transform.position);
+
+        if (dist > 5)
+            return true;
+
+        return false;
+    }
+
     private void OnTriggerEnter(Collider other)
     {
         AgentBehaviour collidingAgent = other.GetComponent<AgentBehaviour>();
@@ -384,5 +399,22 @@ public class EnemyBehaviour : MonoBehaviour, Agent
         ReturnToBase.children.Add(new NodeEnemyHaveIReachedDestination());
 
         return ReturnToBase;
+    }
+
+    private Selector BallBranch()
+    {
+        Selector BallBranch = new Selector();
+        BallBranch.children.Add(CheckOnBall());
+
+        return BallBranch;
+    }
+
+    private Sequencer CheckOnBall()
+    {
+        Sequencer CheckOnBall = new Sequencer();
+        CheckOnBall.children.Add(new NodeEnemyIsBallAwayFromBase());
+
+
+        return CheckOnBall;
     }
 }

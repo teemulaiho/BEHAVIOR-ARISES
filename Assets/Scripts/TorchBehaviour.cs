@@ -14,7 +14,7 @@ public class TorchBehaviour : MonoBehaviour
         torchID = id;
 
         light = GetComponentInChildren<Light>();
-        light.intensity = 0;
+        light.intensity = 1;
     }
 
     public void TorchUpdate()

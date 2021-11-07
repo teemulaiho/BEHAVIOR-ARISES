@@ -41,7 +41,7 @@ public class GameManagerBehaviour : MonoBehaviour
     public Dictionary<TMP_Text, AgentBehaviour> scoreInfo           = new Dictionary<TMP_Text, AgentBehaviour>();
     public Dictionary<Image, AgentBehaviour> agentTargetInfo        = new Dictionary<Image, AgentBehaviour>();
 
-    int agentAmount                                                 = 0;
+    int agentAmount                                                 = 1;
     int torchAmount                                                 = 4;
     
     bool toggle;
@@ -135,7 +135,7 @@ public class GameManagerBehaviour : MonoBehaviour
                 goalPrefab = Resources.Load<GoalBehaviour>("Prefabs/Goal");
                 goalPrefab = Instantiate(goalPrefab);
                 goalPrefab.transform.SetParent(goalParent.transform);
-                goalPrefab.transform.position = new Vector3(25, 1.1f, -25);
+                goalPrefab.transform.position = new Vector3(45, 1.1f, -25);
                 goals.Add(goalPrefab);
             }
 
@@ -168,6 +168,7 @@ public class GameManagerBehaviour : MonoBehaviour
                 safepointPrefab = Resources.Load<GameObject>("Prefabs/SafePoint");
                 safepointPrefab = Instantiate(safepointPrefab);
                 safepointPrefab.tag = "SafePoint";
+                safepointPrefab.transform.position = new Vector3(10,1.1f,-10);
                 safepoints.Add(safepointPrefab);
             }
         }

@@ -134,7 +134,8 @@ public class BallBehaviour : MonoBehaviour
 
     public void ResetBall()
     {
-        transform.position = new Vector3(Random.Range(1, 49), 3, Random.Range(-1, -49));
+        //transform.position = new Vector3(Random.Range(1, 49), 3, Random.Range(-1, -49));
+        transform.position = new Vector3(25, 3, -25);
         speed = defaultSpeed;
         ballState = BallState.Free;
         //gameManager.Goal(this, agent);

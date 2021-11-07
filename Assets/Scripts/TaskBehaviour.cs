@@ -697,3 +697,16 @@ public class NodeEnemyAmIGoingToBase : BT_Node
         return ReturnState.SUCCESS;
     }
 }
+
+public class NodeEnemyIsBallAwayFromBase : BT_Node
+{
+    public override ReturnState Run(Agent a)
+    {
+        EnemyBehaviour enemy = (EnemyBehaviour)a;
+
+        if (enemy.CheckIfBallAwayFromBase())
+            return ReturnState.SUCCESS;
+        
+        return ReturnState.FAILURE;
+    }
+}

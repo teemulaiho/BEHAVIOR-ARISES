@@ -6,6 +6,7 @@ public class ProjectileBehaviour : MonoBehaviour
 {
     Vector3 targetDirection;
     float projectileSpeed;
+    float projectileDamage;
     bool fired;
 
     public void Init(Vector3 startPos, Vector3 targetPos)
@@ -16,21 +17,38 @@ public class ProjectileBehaviour : MonoBehaviour
             transform.position = startPos;
             targetDirection = (targetPos - transform.position).normalized;
             projectileSpeed = 4f;
+            projectileDamage = 200f;
         }
     }
     
     // Update is called once per frame
     void Update()
     {
-        transform.position += targetDirection * projectileSpeed * Time.deltaTime; 
+        transform.position += targetDirection * projectileSpeed * Time.deltaTime;
+        
+        if (Vector3.Distance(transform.position, Vector3.zero) > 50)
+        {
+            DisableGameobject();
+        }
     }
 
     private void OnTriggerEnter(Collider other)
     {
+        if (other.gameObject.CompareTag("Agent"))
+        {
+            other.GetComponent<AgentBehaviour>().AgentTakeDamage(projectileDamage);
+        }
+
+
         if(!other.gameObject.CompareTag("Enemy"))
         {
-            fired = false;
-            this.gameObject.SetActive(false);
+            DisableGameobject();
         }
+    }
+
+    private void DisableGameobject()
+    {
+        fired = false;
+        this.gameObject.SetActive(false);
     }
 }
