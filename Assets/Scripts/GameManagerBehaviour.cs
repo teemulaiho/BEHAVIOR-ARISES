@@ -41,7 +41,7 @@ public class GameManagerBehaviour : MonoBehaviour
     public Dictionary<TMP_Text, AgentBehaviour> scoreInfo           = new Dictionary<TMP_Text, AgentBehaviour>();
     public Dictionary<Image, AgentBehaviour> agentTargetInfo        = new Dictionary<Image, AgentBehaviour>();
 
-    int agentAmount                                                 = 1;
+    int agentAmount                                                 = 0;
     int torchAmount                                                 = 4;
     
     bool toggle;

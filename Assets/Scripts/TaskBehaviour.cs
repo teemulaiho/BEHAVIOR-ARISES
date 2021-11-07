@@ -645,6 +645,19 @@ public class NodeEnemyLightUpTorch : BT_Node
     }
 }
 
+public class NodeEnemyAmIAlreadyAtBase : BT_Node
+{
+    public override ReturnState Run(Agent a)
+    {
+        EnemyBehaviour enemy = (EnemyBehaviour)a;
+
+        if (enemy.CheckDistanceBetween(enemy.transform.position, new Vector3(25, 1.1f, -25), 3))
+            return ReturnState.SUCCESS;
+
+        return ReturnState.FAILURE;
+    }
+}
+
 public class NodeEnemySetDestinationToBase : BT_Node
 {
     public override ReturnState Run(Agent a)
@@ -705,8 +718,48 @@ public class NodeEnemyIsBallAwayFromBase : BT_Node
         EnemyBehaviour enemy = (EnemyBehaviour)a;
 
         if (enemy.CheckIfBallAwayFromBase())
+        {
+            enemy.SetEnemyState(EnemyState.ChaseAfterBall);
             return ReturnState.SUCCESS;
-        
+        }
+
+        return ReturnState.FAILURE;
+    }
+}
+
+public class NodeEnemyTargetBall : BT_Node
+{
+    public override ReturnState Run(Agent a)
+    {
+        EnemyBehaviour enemy = (EnemyBehaviour)a;
+        enemy.SetNewNavMeshDestination(enemy.GetBall().transform.position);
+        return ReturnState.SUCCESS;
+    }
+}
+
+public class NodeEnemyChaseAfterBall : BT_Node
+{
+    public override ReturnState Run(Agent a)
+    {
+        EnemyBehaviour enemy = (EnemyBehaviour)a;
+
+        if(!enemy.CheckDistanceBetween(enemy.transform.position, enemy.GetBall().transform.position, 1))
+            return ReturnState.RUNNING;
+
+        enemy.CaptureBall(true);
+        return ReturnState.SUCCESS;
+    }
+}
+
+public class NodeEnemyDoIHaveBall : BT_Node
+{
+    public override ReturnState Run(Agent a)
+    {
+        EnemyBehaviour enemy = (EnemyBehaviour)a;
+
+        if (enemy.HasBall())
+            return ReturnState.SUCCESS;
+
         return ReturnState.FAILURE;
     }
 }

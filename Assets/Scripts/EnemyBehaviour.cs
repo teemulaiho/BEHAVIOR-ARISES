@@ -9,6 +9,7 @@ public enum EnemyState
     GoToTorch,
     AttackAgent,
     ReturnToBase,
+    ChaseAfterBall,
     None
 }
 
@@ -24,6 +25,7 @@ public class EnemyBehaviour : MonoBehaviour, Agent
     [SerializeField] List<TorchBehaviour>       torchList;
 
     [SerializeField] BallBehaviour              ball;
+    [SerializeField] bool                       hasBall;
 
     [SerializeField] NavMeshAgent               navMeshAgent;
 
@@ -84,6 +86,7 @@ public class EnemyBehaviour : MonoBehaviour, Agent
             root.children.Add(AttackBranch());
             root.children.Add(TorchBranch());
             root.children.Add(BallBranch());
+            root.children.Add(ReturnToBaseBranch());
             bt_root = root; 
         }
     }
@@ -308,12 +311,39 @@ public class EnemyBehaviour : MonoBehaviour, Agent
 
     public bool CheckIfBallAwayFromBase()
     {
-        float dist = Vector3.Distance(ball.transform.position, transform.position);
+        Vector3 basePos = new Vector3(25, 1.1f, -25);
+
+        float dist = Vector3.Distance(ball.transform.position,basePos);
 
         if (dist > 5)
             return true;
 
         return false;
+    }
+
+    public BallBehaviour GetBall()
+    {
+        return ball;
+    }
+
+    public bool CheckDistanceBetween(Vector3 a, Vector3 b, float withinDist)
+    {
+        float dist = Vector3.Distance(a, b);
+
+        if (dist < withinDist)
+            return true;
+
+        return false;
+    }
+
+    public void CaptureBall(bool isBallCaptured)
+    {
+        hasBall = isBallCaptured;
+    }
+
+    public bool HasBall()
+    {
+        return hasBall;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -359,7 +389,6 @@ public class EnemyBehaviour : MonoBehaviour, Agent
         Selector TorchBranch = new Selector();
         TorchBranch.children.Add(SearchForTorches());
         TorchBranch.children.Add(GoLightUpTorch());
-        TorchBranch.children.Add(ReturnToBase());
 
         return TorchBranch;
     }
@@ -391,16 +420,6 @@ public class EnemyBehaviour : MonoBehaviour, Agent
         return GoLightUpTorch;
     }
 
-    private Sequencer ReturnToBase()
-    {
-        Sequencer ReturnToBase = new Sequencer();
-
-        ReturnToBase.children.Add(new NodeEnemySetDestinationToBase());
-        ReturnToBase.children.Add(new NodeEnemyHaveIReachedDestination());
-
-        return ReturnToBase;
-    }
-
     private Selector BallBranch()
     {
         Selector BallBranch = new Selector();
@@ -412,9 +431,37 @@ public class EnemyBehaviour : MonoBehaviour, Agent
     private Sequencer CheckOnBall()
     {
         Sequencer CheckOnBall = new Sequencer();
-        CheckOnBall.children.Add(new NodeEnemyIsBallAwayFromBase());
 
+        Inverter InvertDoIHaveBall = new Inverter();
+        InvertDoIHaveBall.children.Add(new NodeEnemyDoIHaveBall());
+
+        CheckOnBall.children.Add(InvertDoIHaveBall);
+        CheckOnBall.children.Add(new NodeEnemyIsBallAwayFromBase());
+        CheckOnBall.children.Add(new NodeEnemyTargetBall());
+        CheckOnBall.children.Add(new NodeEnemyChaseAfterBall());
 
         return CheckOnBall;
+    }
+
+    private Sequencer ReturnToBaseBranch()
+    {
+        Sequencer ReturnToBaseBranch = new Sequencer();
+        ReturnToBaseBranch.children.Add(ReturnToBase());
+
+        return ReturnToBaseBranch;
+    }
+
+    private Sequencer ReturnToBase()
+    {
+        Sequencer ReturnToBase = new Sequencer();
+
+        Inverter InvertAmIAlreadyAtBase = new Inverter();
+        InvertAmIAlreadyAtBase.children.Add(new NodeEnemyAmIAlreadyAtBase());
+
+        ReturnToBase.children.Add(InvertAmIAlreadyAtBase);
+        ReturnToBase.children.Add(new NodeEnemySetDestinationToBase());
+        ReturnToBase.children.Add(new NodeEnemyHaveIReachedDestination());
+
+        return ReturnToBase;
     }
 }
