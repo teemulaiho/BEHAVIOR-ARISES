@@ -3,15 +3,25 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
+public enum EnemyState
+{
+    Idle,
+    GoToTorch,
+    AttackAgent,
+    ReturnToBase,
+    None
+}
+
 public class EnemyBehaviour : MonoBehaviour, Agent
 {
     [SerializeField] GameManagerBehaviour        gameManager;
     [SerializeField] int                         enemyID;
+    [SerializeField] EnemyState                  enemyState;
 
     [SerializeField] ProjectileBehaviour         bulletPrefab;
     [SerializeField] List<ProjectileBehaviour>   bulletList;
 
-    [SerializeField] List<GameObject>            torchList;
+    [SerializeField] List<TorchBehaviour>        torchList;
 
     [SerializeField] NavMeshAgent                navMeshAgent;
 
@@ -34,13 +44,15 @@ public class EnemyBehaviour : MonoBehaviour, Agent
         gameManager                             = gm;
         enemyID                                 = id;
 
+        enemyState                              = EnemyState.Idle;
+
         bulletPrefab                            = Resources.Load<ProjectileBehaviour>("Prefabs/Bullet");
         bulletList                              = new List<ProjectileBehaviour>();
         bulletPrefab                            = Instantiate(bulletPrefab);
         bulletList.Add(bulletPrefab);
         bulletPrefab.gameObject.SetActive(false);
 
-        torchList                               = new List<GameObject>();
+        torchList                               = new List<TorchBehaviour>();
         torchList.AddRange(gameManager.GetTorches());
 
         navMeshAgent                            = GetComponent<NavMeshAgent>();
@@ -66,7 +78,7 @@ public class EnemyBehaviour : MonoBehaviour, Agent
             Selector root = new Selector();
 
             root.children.Add(AttackBranch());
-            root.children.Add(SearchBranch());
+            root.children.Add(TorchBranch());
             bt_root = root; 
         }
     }
@@ -87,6 +99,18 @@ public class EnemyBehaviour : MonoBehaviour, Agent
         float z = transform.position.z;
 
         transform.position = new Vector3(x, y, z);
+    }
+
+    public EnemyState SetEnemyState(EnemyState state)
+    {
+        enemyState = state;
+
+        return enemyState;
+    }
+
+    public EnemyState GetEnemyState()
+    {
+        return enemyState;
     }
 
     public bool IsTargetInRange()
@@ -170,7 +194,7 @@ public class EnemyBehaviour : MonoBehaviour, Agent
         int i = 0;
         Vector3 newDest = Vector3.zero;
 
-        foreach (GameObject t in torchList)
+        foreach (TorchBehaviour t in torchList)
         {
             if (navMeshAgent.destination.x == t.transform.position.x &&
                 navMeshAgent.destination.z == t.transform.position.z)
@@ -201,12 +225,77 @@ public class EnemyBehaviour : MonoBehaviour, Agent
         navMeshAgent.SetDestination(newDest);
     }
 
+    public void SetNewNavMeshDestination(Vector3 dest)
+    {
+        navMeshAgent.destination = dest;
+    }
+
     public bool CompareDestinationToTorchPositions(Vector3 destination)
     {
-        foreach (GameObject go in torchList)
+        foreach (TorchBehaviour t in torchList)
         {
-            if (go.transform.position == destination)
+            if (t.transform.position.x == destination.x &&
+                t.transform.position.z == destination.z)
                 return true;
+        }
+
+        return false;
+    }
+
+    public bool CheckForUnlitTorches()
+    {
+        foreach(TorchBehaviour t in torchList)
+        {
+            if (t.GetTorchLightIntensity() < 1)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public bool SetDestinationToTorch()
+    {
+        float minDist = float.MaxValue;
+        TorchBehaviour nearestTorch = null; 
+
+
+        foreach (TorchBehaviour t in torchList)
+        {
+            if (t.GetTorchLightIntensity() < 1)
+            {
+                float dist = Vector3.Distance(transform.position, t.transform.position);
+                if (dist < minDist)
+                {
+                    minDist = dist;
+                    nearestTorch = t;
+                }
+            }
+        }
+
+        if (nearestTorch != null && nearestTorch.GetTorchLightIntensity() < 1)
+        {
+            navMeshAgent.destination = nearestTorch.transform.position;
+            return true;
+        }
+
+        return false;
+    }
+
+    public bool LightUpTorch()
+    {
+        Vector3 destination = GetNavMeshDestination();
+
+        foreach (TorchBehaviour t in torchList)
+        {
+            destination.y = t.transform.position.y;
+
+            if (t.transform.position == destination)
+            {
+                t.LightUpTorch();
+                return true;
+            }
         }
 
         return false;
@@ -250,22 +339,50 @@ public class EnemyBehaviour : MonoBehaviour, Agent
         return AttackAgentInRange;
     }
 
-    private Selector SearchBranch()
+    private Selector TorchBranch()
     {
-        Selector SearchBranch = new Selector();
-        SearchBranch.children.Add(new NodeEnemyIsMyDestinationATorch());
-        SearchBranch.children.Add(SearchForAgent());
+        Selector TorchBranch = new Selector();
+        TorchBranch.children.Add(SearchForTorches());
+        TorchBranch.children.Add(GoLightUpTorch());
+        TorchBranch.children.Add(ReturnToBase());
 
-        return SearchBranch;
+        return TorchBranch;
     }
 
-    private Sequencer SearchForAgent()
+    private Sequencer SearchForTorches()
     {
-        Sequencer SearchForAgent = new Sequencer();
-        SearchForAgent.children.Add(new NodeEnemyHasReachedDestination());
-        SearchForAgent.children.Add(new NodeEnemyMoveTowardsDestination());
-        SearchForAgent.children.Add(new NodeSetNewDestination());
+        Sequencer SearchForTorches = new Sequencer();
+        SearchForTorches.children.Add(new NodeEnemyAmIGoingToBase());
+        SearchForTorches.children.Add(new NodeEnemyIsThereAUnlitTorch());
+        Inverter InvertTorchTargetResult = new Inverter();
+        InvertTorchTargetResult.children.Add(new NodeEnemyAmIAlreadyTargetingATorch());
+        SearchForTorches.children.Add(InvertTorchTargetResult);
+        SearchForTorches.children.Add(new NodeEnemySetDestinationToNearestUnlitTorch());
 
-        return SearchForAgent;
+        return SearchForTorches;
+    }
+
+    private Sequencer GoLightUpTorch()
+    {
+        Sequencer GoLightUpTorch = new Sequencer();
+        GoLightUpTorch.children.Add(new NodeEnemyAmIAlreadyTargetingATorch());
+        GoLightUpTorch.children.Add(new NodeEnemyHaveIReachedTorch());
+
+        Inverter InvertTorchLightUpResult = new Inverter();
+        InvertTorchLightUpResult.children.Add(new NodeEnemyLightUpTorch());
+
+        GoLightUpTorch.children.Add(InvertTorchLightUpResult);
+
+        return GoLightUpTorch;
+    }
+
+    private Sequencer ReturnToBase()
+    {
+        Sequencer ReturnToBase = new Sequencer();
+
+        ReturnToBase.children.Add(new NodeEnemySetDestinationToBase());
+        ReturnToBase.children.Add(new NodeEnemyHaveIReachedDestination());
+
+        return ReturnToBase;
     }
 }

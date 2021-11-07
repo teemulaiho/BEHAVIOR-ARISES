@@ -521,6 +521,7 @@ public class NodeEnemyIsAgentInRange : BT_Node
 
         if (enemy.IsTargetInRange())
         {
+            enemy.SetEnemyState(EnemyState.AttackAgent);
             return ReturnState.SUCCESS;
         }
 
@@ -568,57 +569,131 @@ public class NodeEnemyAttackTargetAgent : BT_Node
     }
 }
 
-public class NodeSetNewDestination : BT_Node
+public class NodeEnemyIsThereAUnlitTorch : BT_Node
 {
     public override ReturnState Run(Agent a)
     {
         EnemyBehaviour enemy = (EnemyBehaviour)a;
-        enemy.SetNewNavMeshDestination();
-        Debug.Log("New destination for enemy: " + enemy.GetNavMeshDestination());
+
+        if (enemy.CheckForUnlitTorches())
+        {
+            return ReturnState.SUCCESS;
+        }
+
+        return ReturnState.FAILURE;
+    }
+}
+
+public class NodeEnemyAmIAlreadyTargetingATorch : BT_Node
+{
+    public override ReturnState Run(Agent a)
+    {
+        EnemyBehaviour enemy = (EnemyBehaviour)a;
+        Vector3 navMeshDest = enemy.GetNavMeshDestination();
+        
+        if (enemy.CompareDestinationToTorchPositions(navMeshDest))
+        {
+            return ReturnState.SUCCESS;
+        }
+
+        return ReturnState.FAILURE;
+    }
+}
+
+public class NodeEnemySetDestinationToNearestUnlitTorch : BT_Node
+{
+    public override ReturnState Run(Agent a)
+    {
+        EnemyBehaviour enemy = (EnemyBehaviour)a;
+        if (enemy.SetDestinationToTorch())
+        {
+            enemy.SetEnemyState(EnemyState.GoToTorch);
+            return ReturnState.SUCCESS;
+        }
+
+        return ReturnState.FAILURE;
+    }
+}
+
+public class NodeEnemyHaveIReachedTorch : BT_Node
+{
+    public override ReturnState Run(Agent a)
+    {
+        EnemyBehaviour enemy = (EnemyBehaviour)a;
+
+        float dist = Vector3.Distance(enemy.transform.position, enemy.GetNavMeshDestination());
+
+        if (dist < 3)
+        {
+            return ReturnState.SUCCESS;
+        }
+
+        return ReturnState.RUNNING;
+    }
+}
+
+public class NodeEnemyLightUpTorch : BT_Node
+{
+    public override ReturnState Run(Agent a)
+    {
+        EnemyBehaviour enemy = (EnemyBehaviour)a;
+
+        if (enemy.LightUpTorch())
+            return ReturnState.SUCCESS;
+
+        return ReturnState.FAILURE; 
+    }
+}
+
+public class NodeEnemySetDestinationToBase : BT_Node
+{
+    public override ReturnState Run(Agent a)
+    {
+        EnemyBehaviour enemy = (EnemyBehaviour)a;
+
+        Vector3 newDest = new Vector3(25, enemy.transform.position.y, -25);
+
+        enemy.SetNewNavMeshDestination(newDest);
+        enemy.SetEnemyState(EnemyState.ReturnToBase);
 
         return ReturnState.SUCCESS;
     }
 }
 
-public class NodeEnemyIsMyDestinationATorch: BT_Node
+public class NodeEnemyHaveIReachedDestination : BT_Node
 {
     public override ReturnState Run(Agent a)
     {
         EnemyBehaviour enemy = (EnemyBehaviour)a;
 
-        if (enemy.CompareDestinationToTorchPositions(enemy.GetNavMeshDestination()))
+        Vector3 destination = enemy.GetNavMeshDestination();
+        destination.y = enemy.transform.position.y;
+        
+        if(enemy.transform.position != destination)
+        {
+            return ReturnState.RUNNING;
+        }
+
+        enemy.SetEnemyState(EnemyState.Idle);
+        return ReturnState.FAILURE;
+    }
+}
+
+public class NodeEnemyAmIGoingToBase : BT_Node
+{
+    public override ReturnState Run(Agent a)
+    {
+        EnemyBehaviour enemy = (EnemyBehaviour)a;
+
+        Vector3 destination = enemy.GetNavMeshDestination();
+        destination.y = 1.1f;
+
+        if (enemy.GetEnemyState() == EnemyState.ReturnToBase && 
+            destination == new Vector3(25, 1.1f, -25))
         {
             return ReturnState.FAILURE;
         }
 
-        enemy.SetNewNavMeshDestination();
-
         return ReturnState.SUCCESS;
-    }
-}
-
-public class NodeEnemyHasReachedDestination : BT_Node
-{
-    public override ReturnState Run(Agent a)
-    {
-        EnemyBehaviour enemy = (EnemyBehaviour)a;
-
-        if (Vector3.Distance(enemy.GetNavMeshDestination(), enemy.transform.position) > 5f)
-            return ReturnState.SUCCESS;
-        else
-            return ReturnState.RUNNING;
-    }
-}
-
-public class NodeEnemyMoveTowardsDestination :BT_Node
-{
-    public override ReturnState Run(Agent a)
-    {
-        EnemyBehaviour enemy = (EnemyBehaviour)a;
-
-        if (Vector3.Distance(enemy.GetNavMeshDestination(), enemy.transform.position) < 5f)
-            return ReturnState.SUCCESS;
-        else
-            return ReturnState.RUNNING;
     }
 }

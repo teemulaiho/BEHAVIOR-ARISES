@@ -21,7 +21,7 @@ public class GameManagerBehaviour : MonoBehaviour
     CubeBehaviour cubePrefab;
     GameObject safepointPrefab;
     RectTransform agentUIPrefab;
-    GameObject torchPrefab;
+    TorchBehaviour torchPrefab;
 
     List<EnemyBehaviour> enemies                                    = new List<EnemyBehaviour>();
     List<AgentBehaviour> agents                                     = new List<AgentBehaviour>();
@@ -30,7 +30,7 @@ public class GameManagerBehaviour : MonoBehaviour
     List<PowerupBehaviour> powerups                                 = new List<PowerupBehaviour>();
     List<CubeBehaviour> cubes                                       = new List<CubeBehaviour>();
     List<GameObject> safepoints                                     = new List<GameObject>();
-    List<GameObject> torches                                        = new List<GameObject>();
+    List<TorchBehaviour> torches                                    = new List<TorchBehaviour>();
     
     public List<Sprite> uiSprites                                   = new List<Sprite>();
     
@@ -41,7 +41,7 @@ public class GameManagerBehaviour : MonoBehaviour
     public Dictionary<TMP_Text, AgentBehaviour> scoreInfo           = new Dictionary<TMP_Text, AgentBehaviour>();
     public Dictionary<Image, AgentBehaviour> agentTargetInfo        = new Dictionary<Image, AgentBehaviour>();
 
-    int agentAmount                                                 = 1;
+    int agentAmount                                                 = 0;
     int torchAmount                                                 = 4;
     
     bool toggle;
@@ -77,12 +77,13 @@ public class GameManagerBehaviour : MonoBehaviour
             // Torch Instantiate
             {
                 GameObject torchParent = new GameObject("TORCHES");
-                torchPrefab = Resources.Load<GameObject>("Prefabs/Torch");
+                torchPrefab = Resources.Load<TorchBehaviour>("Prefabs/Torch");
                 for (int i = 0; i < torchAmount; i++)
                 {
                     torchPrefab = Instantiate(torchPrefab);
                     torchPrefab.transform.SetParent(torchParent.transform);
                     torchPrefab.name = "Torch " + i;
+                    torchPrefab.Init(this, i);
                     torches.Add(torchPrefab);
 
                     if (i == 0)
@@ -100,7 +101,7 @@ public class GameManagerBehaviour : MonoBehaviour
             {
                 enemyPrefab = Resources.Load<EnemyBehaviour>("Prefabs/Enemy");
                 enemyPrefab = Instantiate(enemyPrefab);
-                enemyPrefab.transform.position = new Vector3(25, 2, -25);
+                enemyPrefab.transform.position = new Vector3(15, 2, -25);
                 enemies.Add(enemyPrefab);
             }
 
@@ -244,6 +245,11 @@ public class GameManagerBehaviour : MonoBehaviour
         {
             toggle = !toggle;
             Debug.Log("toggle: " + toggle);
+        }
+
+        foreach (TorchBehaviour t in torches)
+        {
+            t.TorchUpdate();
         }
 
         foreach (EnemyBehaviour e in enemies)
@@ -545,7 +551,7 @@ public class GameManagerBehaviour : MonoBehaviour
         return isTeamPlayActive;
     }
 
-    public List<GameObject> GetTorches()
+    public List<TorchBehaviour> GetTorches()
     {
         return torches;
     }
