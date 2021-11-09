@@ -15,6 +15,7 @@ public class BallBehaviour : MonoBehaviour
     public Rigidbody rigidBody;
     public BallState ballState;
     public AgentBehaviour agent;
+    public EnemyBehaviour enemy;
     public Vector3 fleefrom;
     public Vector3 newPos;
     public float speed = 2.5f;
@@ -36,8 +37,13 @@ public class BallBehaviour : MonoBehaviour
             rigidBody.velocity = Vector3.zero;
             transform.position = Vector3.MoveTowards(transform.position, agent.transform.position, speed * Time.deltaTime);
         }
+        else if (enemy != null)
+        {
+            rigidBody.velocity = Vector3.zero;
+            transform.position = Vector3.MoveTowards(transform.position, enemy.transform.position, speed * Time.deltaTime);
+        }
 
-        if (agent == null)
+        if (agent == null || enemy == null)
         {
             if (Vector3.Distance(transform.position, gameManager.GetGoalPosition()) > 50)
             {
@@ -51,22 +57,46 @@ public class BallBehaviour : MonoBehaviour
         return ballState;
     }
 
-    public void SetAgent(AgentBehaviour p_agent)
+    public void SetAgent(Agent a)
     {
-        if(agent != p_agent)
+        EnemyBehaviour e_agent = a as EnemyBehaviour;
+        AgentBehaviour p_agent = a as AgentBehaviour;
+
+        if (p_agent && agent != p_agent)
         {
             agent = p_agent;
             speed = p_agent.agentSpeed;
+
+            enemy = null;
+        }
+
+        if (e_agent)
+        {
+            enemy = e_agent;
+            speed = e_agent.GetNavMeshAgentSpeed();
+
+            agent = null;
         }
     }
 
-    public bool RemoveAgent(AgentBehaviour p_agent)
+    public bool RemoveAgent(Agent a)
     {
-        if(agent != null)
+        EnemyBehaviour e_agent = a as EnemyBehaviour;
+        AgentBehaviour p_agent = a as AgentBehaviour;
+
+        if (agent != null)
         {
             if (agent == p_agent)
             {
                 agent = null;
+                return true;
+            }
+        }
+        else if (enemy != null)
+        {
+            if (enemy == e_agent)
+            {
+                enemy = null;
                 return true;
             }
         }

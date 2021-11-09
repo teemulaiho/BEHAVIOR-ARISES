@@ -673,7 +673,7 @@ public class NodeEnemySetDestinationToBase : BT_Node
     }
 }
 
-public class NodeEnemyHaveIReachedDestination : BT_Node
+public class NodeEnemyHaveIReachedDestinationBase : BT_Node
 {
     public override ReturnState Run(Agent a)
     {
@@ -682,13 +682,16 @@ public class NodeEnemyHaveIReachedDestination : BT_Node
         Vector3 destination = enemy.GetNavMeshDestination();
         destination.y = enemy.transform.position.y;
         
-        if(enemy.transform.position != destination)
+        if(!enemy.CheckDistanceBetween(enemy.transform.position, destination, 2))
         {
             return ReturnState.RUNNING;
         }
 
         enemy.SetEnemyState(EnemyState.Idle);
-        return ReturnState.FAILURE;
+
+        if (enemy.HasBall())
+            enemy.DropBall();
+        return ReturnState.SUCCESS;
     }
 }
 
@@ -746,7 +749,6 @@ public class NodeEnemyChaseAfterBall : BT_Node
         if(!enemy.CheckDistanceBetween(enemy.transform.position, enemy.GetBall().transform.position, 1))
             return ReturnState.RUNNING;
 
-        enemy.CaptureBall(true);
         return ReturnState.SUCCESS;
     }
 }
@@ -761,5 +763,16 @@ public class NodeEnemyDoIHaveBall : BT_Node
             return ReturnState.SUCCESS;
 
         return ReturnState.FAILURE;
+    }
+}
+
+public class NodeEnemyCaptureBall : BT_Node
+{
+    public override ReturnState Run(Agent a)
+    {
+        EnemyBehaviour enemy = (EnemyBehaviour)a;
+
+        enemy.CaptureBall(true);
+        return ReturnState.SUCCESS;
     }
 }

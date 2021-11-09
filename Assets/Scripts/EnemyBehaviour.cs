@@ -238,6 +238,11 @@ public class EnemyBehaviour : MonoBehaviour, Agent
         navMeshAgent.destination = dest;
     }
 
+    public float GetNavMeshAgentSpeed()
+    {
+        return navMeshAgent.speed;
+    }
+
     public bool CompareDestinationToTorchPositions(Vector3 destination)
     {
         foreach (TorchBehaviour t in torchList)
@@ -339,11 +344,22 @@ public class EnemyBehaviour : MonoBehaviour, Agent
     public void CaptureBall(bool isBallCaptured)
     {
         hasBall = isBallCaptured;
+        ball = gameManager.GetBall();
+        ball.SetAgent(this);
     }
 
     public bool HasBall()
     {
         return hasBall;
+    }
+    
+    public void DropBall()
+    {
+        if (hasBall && ball)
+        {
+            ball.RemoveAgent(this);
+            hasBall = false;
+        }
     }
 
     private void OnTriggerEnter(Collider other)
@@ -439,6 +455,7 @@ public class EnemyBehaviour : MonoBehaviour, Agent
         CheckOnBall.children.Add(new NodeEnemyIsBallAwayFromBase());
         CheckOnBall.children.Add(new NodeEnemyTargetBall());
         CheckOnBall.children.Add(new NodeEnemyChaseAfterBall());
+        CheckOnBall.children.Add(new NodeEnemyCaptureBall());
 
         return CheckOnBall;
     }
@@ -460,7 +477,7 @@ public class EnemyBehaviour : MonoBehaviour, Agent
 
         ReturnToBase.children.Add(InvertAmIAlreadyAtBase);
         ReturnToBase.children.Add(new NodeEnemySetDestinationToBase());
-        ReturnToBase.children.Add(new NodeEnemyHaveIReachedDestination());
+        ReturnToBase.children.Add(new NodeEnemyHaveIReachedDestinationBase());
 
         return ReturnToBase;
     }
