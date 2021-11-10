@@ -14,7 +14,7 @@ public class BallBehaviour : MonoBehaviour
     public GameManagerBehaviour gameManager;
     public Rigidbody rigidBody;
     public BallState ballState;
-    public AgentBehaviour agent;
+    public LeadAgentBehaviour agent;
     public EnemyBehaviour enemy;
     public Vector3 fleefrom;
     public Vector3 newPos;
@@ -60,12 +60,12 @@ public class BallBehaviour : MonoBehaviour
     public void SetAgent(Agent a)
     {
         EnemyBehaviour e_agent = a as EnemyBehaviour;
-        AgentBehaviour p_agent = a as AgentBehaviour;
+        LeadAgentBehaviour p_agent = a as LeadAgentBehaviour;
 
         if (p_agent && agent != p_agent)
         {
             agent = p_agent;
-            speed = p_agent.agentSpeed;
+            speed = p_agent.GetNavMeshAgentSpeed();
 
             enemy = null;
         }
@@ -82,7 +82,7 @@ public class BallBehaviour : MonoBehaviour
     public bool RemoveAgent(Agent a)
     {
         EnemyBehaviour e_agent = a as EnemyBehaviour;
-        AgentBehaviour p_agent = a as AgentBehaviour;
+        LeadAgentBehaviour p_agent = a as LeadAgentBehaviour;
 
         if (agent != null)
         {

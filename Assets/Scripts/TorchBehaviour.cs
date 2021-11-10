@@ -31,4 +31,9 @@ public class TorchBehaviour : MonoBehaviour
     {
         light.intensity = 1;
     }
+
+    public void LightDownTorch()
+    {
+        light.intensity = 0;
+    }
 }

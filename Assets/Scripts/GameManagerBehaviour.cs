@@ -14,7 +14,8 @@ public class GameManagerBehaviour : MonoBehaviour
     public Image[] agentImages;
 
     EnemyBehaviour enemyPrefab;
-    AgentBehaviour agentPrefab;
+    LeadAgentBehaviour leadAgentPrefab;
+    SupportAgentBehaviour supportAgentPrefab;
     BallBehaviour ballPrefab;
     GoalBehaviour goalPrefab;
     PowerupBehaviour powerupPrefab;
@@ -24,7 +25,8 @@ public class GameManagerBehaviour : MonoBehaviour
     TorchBehaviour torchPrefab;
 
     List<EnemyBehaviour> enemies                                    = new List<EnemyBehaviour>();
-    List<AgentBehaviour> agents                                     = new List<AgentBehaviour>();
+    List<LeadAgentBehaviour> leadAgents                             = new List<LeadAgentBehaviour>();
+    List<SupportAgentBehaviour> supportAgents                       = new List<SupportAgentBehaviour>();
     List<BallBehaviour> balls                                       = new List<BallBehaviour>();
     List<GoalBehaviour> goals                                       = new List<GoalBehaviour>();
     List<PowerupBehaviour> powerups                                 = new List<PowerupBehaviour>();
@@ -34,12 +36,12 @@ public class GameManagerBehaviour : MonoBehaviour
     
     public List<Sprite> uiSprites                                   = new List<Sprite>();
     
-    public Dictionary<AgentBehaviour, BallBehaviour> chaseInfo      = new Dictionary<AgentBehaviour, BallBehaviour>();
-    public Dictionary<AgentBehaviour, BallBehaviour> captureInfo    = new Dictionary<AgentBehaviour, BallBehaviour>();
-    public Dictionary<AgentBehaviour, GoalBehaviour> goalInfo       = new Dictionary<AgentBehaviour, GoalBehaviour>();
+    public Dictionary<LeadAgentBehaviour, BallBehaviour> chaseInfo      = new Dictionary<LeadAgentBehaviour, BallBehaviour>();
+    public Dictionary<LeadAgentBehaviour, BallBehaviour> captureInfo    = new Dictionary<LeadAgentBehaviour, BallBehaviour>();
+    public Dictionary<LeadAgentBehaviour, GoalBehaviour> goalInfo       = new Dictionary<LeadAgentBehaviour, GoalBehaviour>();
 
-    public Dictionary<TMP_Text, AgentBehaviour> scoreInfo           = new Dictionary<TMP_Text, AgentBehaviour>();
-    public Dictionary<Image, AgentBehaviour> agentTargetInfo        = new Dictionary<Image, AgentBehaviour>();
+    public Dictionary<TMP_Text, LeadAgentBehaviour> scoreInfo           = new Dictionary<TMP_Text, LeadAgentBehaviour>();
+    public Dictionary<Image, LeadAgentBehaviour> agentTargetInfo        = new Dictionary<Image, LeadAgentBehaviour>();
 
     int agentAmount                                                 = 2;
     int torchAmount                                                 = 4;
@@ -108,15 +110,27 @@ public class GameManagerBehaviour : MonoBehaviour
             // Agent Instantiate.
             {
                 GameObject agentParent = new GameObject("AGENTS");
-                agentPrefab = Resources.Load<AgentBehaviour>("Prefabs/Agent");
+                leadAgentPrefab = Resources.Load<LeadAgentBehaviour>("Prefabs/LeadAgent");
                 for (int i = 0; i < agentAmount; i++)
                 {
-                    agentPrefab = Instantiate(agentPrefab);
-                    agentPrefab.transform.SetParent(agentParent.transform);
-                    agentPrefab.transform.position = new Vector3(Random.Range(1, 50), 2, Random.Range(-1, -50));
-                    agentPrefab.team = i % 2;
-                    agents.Add(agentPrefab);
+                    leadAgentPrefab = Instantiate(leadAgentPrefab);
+                    leadAgentPrefab.transform.SetParent(agentParent.transform);
+                    leadAgentPrefab.transform.position = new Vector3(Random.Range(1, 50), 2, Random.Range(-1, -50));
+                    leadAgentPrefab.team = i % 2;
+                    leadAgents.Add(leadAgentPrefab);
                 }
+
+                supportAgentPrefab = Resources.Load<SupportAgentBehaviour>("Prefabs/SupportAgent");
+                for (int i = 0; i < agentAmount; i++)
+                {
+                    supportAgentPrefab = Instantiate(supportAgentPrefab);
+                    supportAgentPrefab.transform.SetParent(agentParent.transform);
+                    supportAgentPrefab.transform.position = new Vector3(Random.Range(1, 50), 2, Random.Range(-1, -50));
+                    supportAgentPrefab.SetAgentTeam(i % 2);
+                    supportAgents.Add(supportAgentPrefab);
+                }
+
+                //GameObject 
             }
 
             // Ball Instantiate.
@@ -180,14 +194,19 @@ public class GameManagerBehaviour : MonoBehaviour
                 enemies[i].Init(this, i);
             }
 
-            for (int i = 0; i < agents.Count; i++)
+            for (int i = 0; i < leadAgents.Count; i++)
             {
-                goalInfo[agents[i]] = goals[0];
+                goalInfo[leadAgents[i]] = goals[0];
             }
 
-            for (int i = 0; i < agents.Count; i++)
+            for (int i = 0; i < leadAgents.Count; i++)
             {
-                agents[i].Init(this, i);
+                leadAgents[i].Init(this, i);
+            }
+
+            for (int i = 0; i < supportAgents.Count; i++)
+            {
+                supportAgents[i].Init(this, i);
             }
 
             for (int i = 0; i < balls.Count; i++)
@@ -215,26 +234,26 @@ public class GameManagerBehaviour : MonoBehaviour
         {
             // Initialize Health bars
             {
-                for (int i = 0; i < agents.Count; i++)
+                for (int i = 0; i < leadAgents.Count; i++)
                 {
-                    healthBars[i].SetMaxHealth(agents[i].agentMaxHealth);
+                    healthBars[i].SetMaxHealth(leadAgents[i].agentMaxHealth);
                 }
             }
         }
 
         // Initialize UI ScoreTexts With Agents
         {
-            for (int i = 0; i < agents.Count; i++)
+            for (int i = 0; i < leadAgents.Count; i++)
             {
-                scoreInfo.Add(agentScoreTexts[i], agents[i]);
+                scoreInfo.Add(agentScoreTexts[i], leadAgents[i]);
             }
         }
 
         // Initialize UI AgentTargets With Agents
         {
-            for (int i = 0; i < agents.Count; i++)
+            for (int i = 0; i < leadAgents.Count; i++)
             {
-                agentTargetInfo.Add(agentImages[i], agents[i]);
+                agentTargetInfo.Add(agentImages[i], leadAgents[i]);
             }
         }
     }
@@ -258,9 +277,14 @@ public class GameManagerBehaviour : MonoBehaviour
             e.EnemyUpdate();
         }
 
-        for (int i = 0; i < agents.Count; i++)
+        for (int i = 0; i < leadAgents.Count; i++)
         {
-            agents[i].AgentUpdate();
+            leadAgents[i].AgentUpdate();
+        }
+
+        for (int i = 0; i < supportAgents.Count; i++)
+        {
+            supportAgents[i].AgentUpdate();
         }
 
         for (int i = 0; i < balls.Count; i++)
@@ -275,9 +299,9 @@ public class GameManagerBehaviour : MonoBehaviour
 
         // Update UI Health bars
         {
-            for (int i = 0; i < agents.Count; i++)
+            for (int i = 0; i < leadAgents.Count; i++)
             {
-                healthBars[i].SetHealth(agents[i].agentCurrentHealth);
+                healthBars[i].SetHealth(leadAgents[i].agentCurrentHealth);
             }
         }
 
@@ -331,7 +355,7 @@ public class GameManagerBehaviour : MonoBehaviour
         //}
     }
 
-    public BallBehaviour GetFreeBall(AgentBehaviour agent)
+    public BallBehaviour GetFreeBall(LeadAgentBehaviour agent)
     {
         for (int i = 0; i < balls.Count; i++)
         {
@@ -375,19 +399,19 @@ public class GameManagerBehaviour : MonoBehaviour
         int leadCount = 0;
         int supportCount = 0;
 
-        for (int i = 0; i < agents.Count; i++)
+        for (int i = 0; i < leadAgents.Count; i++)
         {
-            if (agents[i].team == team)
+            if (leadAgents[i].team == team)
             {
-                if (agents[i].agentRole == AgentRole.None)
+                if (leadAgents[i].agentRole == AgentRole.None)
                 {
                     noneCount++;
                 }
-                else if (agents[i].agentRole == AgentRole.Lead)
+                else if (leadAgents[i].agentRole == AgentRole.Lead)
                 {
                     leadCount++;
                 }
-                else if (agents[i].agentRole == AgentRole.Support)
+                else if (leadAgents[i].agentRole == AgentRole.Support)
                 {
                     supportCount++;
                 }
@@ -410,32 +434,32 @@ public class GameManagerBehaviour : MonoBehaviour
         return AgentRole.None;
     }
 
-    public void SetAgent(AgentBehaviour p_agent)
+    public void SetAgent(LeadAgentBehaviour p_agent)
     {
         balls[0].SetAgent(p_agent);
     }
 
-    public AgentBehaviour GetNearestEnemyAgent(AgentBehaviour p_agent)
+    public LeadAgentBehaviour GetNearestEnemyAgent(LeadAgentBehaviour p_agent)
     {
         float distance = float.MaxValue;
         int closestAgentIndex = -1;
 
-        if (agents != null && agents.Count > 0)
+        if (leadAgents != null && leadAgents.Count > 0)
         {
-            for (int i = 0; i < agents.Count; i++)
+            for (int i = 0; i < leadAgents.Count; i++)
             {
-                if (agents[i].team != p_agent.team &&
-                    agents[i] != p_agent)
+                if (leadAgents[i].team != p_agent.team &&
+                    leadAgents[i] != p_agent)
                 {
-                    if (Vector3.Distance(p_agent.transform.position, agents[i].transform.position) < distance)
+                    if (Vector3.Distance(p_agent.transform.position, leadAgents[i].transform.position) < distance)
                     {
-                        distance = Vector3.Distance(p_agent.transform.position, agents[i].transform.position);
+                        distance = Vector3.Distance(p_agent.transform.position, leadAgents[i].transform.position);
                         closestAgentIndex = i;
                     }
                 }
             }
 
-            return agents[closestAgentIndex];
+            return leadAgents[closestAgentIndex];
         } 
 
         return null;
@@ -464,7 +488,7 @@ public class GameManagerBehaviour : MonoBehaviour
         return false;
     }
 
-    public bool AmICaptured(BallBehaviour ball, out AgentBehaviour agent)
+    public bool AmICaptured(BallBehaviour ball, out LeadAgentBehaviour agent)
     {
         agent = null;
 
@@ -486,7 +510,7 @@ public class GameManagerBehaviour : MonoBehaviour
         return false;
     }
 
-    public void UpdateChaseData(AgentBehaviour agent, BallBehaviour ball) // agent behavior calling this
+    public void UpdateChaseData(LeadAgentBehaviour agent, BallBehaviour ball) // agent behavior calling this
     {
         if (!chaseInfo.ContainsKey(agent))
             chaseInfo[agent] = ball;
@@ -495,7 +519,7 @@ public class GameManagerBehaviour : MonoBehaviour
             captureInfo.Remove(agent);
     }
 
-    public void UpdateCaptureData(AgentBehaviour agent, BallBehaviour ball)
+    public void UpdateCaptureData(LeadAgentBehaviour agent, BallBehaviour ball)
     {
         captureInfo[agent] = ball;
 
@@ -503,7 +527,7 @@ public class GameManagerBehaviour : MonoBehaviour
             chaseInfo.Remove(agent);
     }
 
-    public void RemoveCaptureData(AgentBehaviour agent)
+    public void RemoveCaptureData(LeadAgentBehaviour agent)
     {
         if (captureInfo.ContainsKey(agent))
         {
@@ -520,13 +544,13 @@ public class GameManagerBehaviour : MonoBehaviour
         }
     }
 
-    public void Goal(BallBehaviour ball, AgentBehaviour agent)
+    public void Goal(BallBehaviour ball, LeadAgentBehaviour agent)
     {
         captureInfo.Remove(agent);
         agent.AddScore();
     }
 
-    public GoalBehaviour GetGoal(AgentBehaviour agent)
+    public GoalBehaviour GetGoal(LeadAgentBehaviour agent)
     {
         return goalInfo[agent];
     }

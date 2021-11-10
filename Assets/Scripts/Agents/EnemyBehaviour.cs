@@ -22,16 +22,16 @@ public class EnemyBehaviour : MonoBehaviour, Agent
     [SerializeField] ProjectileBehaviour        bulletPrefab;
     [SerializeField] List<ProjectileBehaviour>  bulletList;
 
+    [SerializeField] NavMeshAgent               navMeshAgent;
+
     [SerializeField] List<TorchBehaviour>       torchList;
 
     [SerializeField] BallBehaviour              ball;
     [SerializeField] bool                       hasBall;
 
-    [SerializeField] NavMeshAgent               navMeshAgent;
-
     [SerializeField] SphereCollider             rangeCollider;
-    [SerializeField] List<AgentBehaviour>       agentsInRangeList;
-    [SerializeField] AgentBehaviour             targetAgent;
+    [SerializeField] List<LeadAgentBehaviour>   agentsInRangeList;
+    [SerializeField] LeadAgentBehaviour         targetAgent;
 
     [SerializeField] public HealthbarBehaviour  healthBar;
     [SerializeField] public float               enemyMaxHealth;
@@ -41,7 +41,6 @@ public class EnemyBehaviour : MonoBehaviour, Agent
     [SerializeField] public float               enemyAttackCoolDownDT;
 
     [SerializeField] public BT_Node             bt_root;
-
 
     public void Init(GameManagerBehaviour gm, int id)
     {
@@ -75,7 +74,7 @@ public class EnemyBehaviour : MonoBehaviour, Agent
         rangeCollider                           = GetComponent<SphereCollider>();
         rangeCollider.radius                    = enemyRange;
 
-        agentsInRangeList                       = new List<AgentBehaviour>();
+        agentsInRangeList                       = new List<LeadAgentBehaviour>();
 
         healthBar.SetMaxHealth(enemyMaxHealth);
 
@@ -137,7 +136,7 @@ public class EnemyBehaviour : MonoBehaviour, Agent
 
         if (agentsInRangeList.Count >0)
         {
-            foreach (AgentBehaviour a in agentsInRangeList)
+            foreach (LeadAgentBehaviour a in agentsInRangeList)
             {
                 float dist = Vector3.Distance(transform.position, a.transform.position);
                 
@@ -153,7 +152,7 @@ public class EnemyBehaviour : MonoBehaviour, Agent
         return false;
     }
 
-    public AgentBehaviour GetTargetAgent()
+    public LeadAgentBehaviour GetTargetAgent()
     {
         return targetAgent;
     }
@@ -268,26 +267,41 @@ public class EnemyBehaviour : MonoBehaviour, Agent
         return false;
     }
 
-    public bool SetDestinationToTorch()
+    public bool SetDestinationToTorch(int newLightIntensityValue)
     {
         float minDist = float.MaxValue;
         TorchBehaviour nearestTorch = null; 
 
-
         foreach (TorchBehaviour t in torchList)
         {
-            if (t.GetTorchLightIntensity() < 1)
+            if (newLightIntensityValue == 1)
             {
-                float dist = Vector3.Distance(transform.position, t.transform.position);
-                if (dist < minDist)
+                if (t.GetTorchLightIntensity() < 1)
                 {
-                    minDist = dist;
-                    nearestTorch = t;
+                    float dist = Vector3.Distance(transform.position, t.transform.position);
+                    if (dist < minDist)
+                    {
+                        minDist = dist;
+                        nearestTorch = t;
+                    }
+                }
+            }
+            else if (newLightIntensityValue == 0)
+            {
+                if (t.GetTorchLightIntensity() >= 1)
+                {
+                    float dist = Vector3.Distance(transform.position, t.transform.position);
+                    if (dist < minDist)
+                    {
+                        minDist = dist;
+                        nearestTorch = t;
+                    }
                 }
             }
         }
 
-        if (nearestTorch != null && nearestTorch.GetTorchLightIntensity() < 1)
+
+        if (nearestTorch != null)
         {
             navMeshAgent.destination = nearestTorch.transform.position;
             return true;
@@ -364,7 +378,7 @@ public class EnemyBehaviour : MonoBehaviour, Agent
 
     private void OnTriggerEnter(Collider other)
     {
-        AgentBehaviour collidingAgent = other.GetComponent<AgentBehaviour>();
+        LeadAgentBehaviour collidingAgent = other.GetComponent<LeadAgentBehaviour>();
 
         if (collidingAgent && !agentsInRangeList.Contains(collidingAgent))
         {
@@ -374,7 +388,7 @@ public class EnemyBehaviour : MonoBehaviour, Agent
 
     private void OnTriggerExit(Collider other)
     {
-        AgentBehaviour collidingAgent = other.GetComponent<AgentBehaviour>();
+        LeadAgentBehaviour collidingAgent = other.GetComponent<LeadAgentBehaviour>();
 
         if (collidingAgent && agentsInRangeList.Contains(collidingAgent))
         {

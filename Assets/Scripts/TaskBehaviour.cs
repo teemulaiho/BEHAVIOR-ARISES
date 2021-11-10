@@ -8,6 +8,7 @@ public enum ReturnState
     RUNNING
 }
 
+#region Behaviour Tree Base
 public abstract class BT_Node
 {
     public abstract ReturnState Run(Agent a);
@@ -26,7 +27,7 @@ public class Selector : BT_Node // Choose reaction.
             if (state != ReturnState.FAILURE)
             {
                 return state;
-            }              
+            }
         }
 
         return ReturnState.FAILURE;
@@ -86,12 +87,15 @@ public class NodePrint : BT_Node
     }
 }
 
+#endregion
+
 // Generic Behaviour
+#region Generic Agent Behaviour
 public class NodeCheckHealthAbove25Percent : BT_Node
 {
     public override ReturnState Run(Agent a)
     {
-        AgentBehaviour agent = (AgentBehaviour)a;
+        LeadAgentBehaviour agent = (LeadAgentBehaviour)a;
 
         if (agent.agentCurrentHealth / agent.agentMaxHealth > 0.25f &&
             !agent.isHealing)
@@ -107,7 +111,7 @@ public class NodeCheckHealthAbove50Percent : BT_Node
 {
     public override ReturnState Run(Agent a)
     {
-        AgentBehaviour agent = (AgentBehaviour)a;
+        LeadAgentBehaviour agent = (LeadAgentBehaviour)a;
 
         if (agent.agentCurrentHealth / agent.agentMaxHealth > 0.5f &&
             !agent.isHealing)
@@ -131,7 +135,7 @@ public class NodeTargetSafeArea : BT_Node
 {
     public override ReturnState Run(Agent a)
     {
-        AgentBehaviour agent = (AgentBehaviour)a;
+        LeadAgentBehaviour agent = (LeadAgentBehaviour)a;
 
         agent.targetPos = agent.safePos;
         agent.targetType = TargetType.Safe;
@@ -143,7 +147,7 @@ public class NodeHealAgent : BT_Node
 {
     public override ReturnState Run(Agent a)
     {
-        AgentBehaviour agent = (AgentBehaviour)a;
+        LeadAgentBehaviour agent = (LeadAgentBehaviour)a;
 
         if (agent.agentCurrentHealth < agent.agentMaxHealth)
         {
@@ -165,12 +169,15 @@ public class NodeHealAgent : BT_Node
     }
 }
 
+#endregion
+
 // Lead Agent
+#region Lead Agent Behaviour Nodes
 public class NodeDoIHaveBall : BT_Node
 {
     public override ReturnState Run(Agent a)
     {
-        AgentBehaviour agent = (AgentBehaviour)a;
+        LeadAgentBehaviour agent = (LeadAgentBehaviour)a;
 
         if (agent.targetBall.agent == agent)
         {
@@ -186,9 +193,9 @@ public class NodeDoesSomeoneElseHaveBall : BT_Node
 {
     public override ReturnState Run(Agent a)
     {
-        AgentBehaviour agent = (AgentBehaviour)a;
+        LeadAgentBehaviour agent = (LeadAgentBehaviour)a;
 
-        if (agent.targetBall.agent != null && 
+        if (agent.targetBall.agent != null &&
             agent.targetBall.agent != agent)
         {
             return ReturnState.SUCCESS;
@@ -202,14 +209,14 @@ public class NodeIsBallFree : BT_Node
 {
     public override ReturnState Run(Agent a)
     {
-        AgentBehaviour agent = (AgentBehaviour)a;
+        LeadAgentBehaviour agent = (LeadAgentBehaviour)a;
 
         if (agent.targetBall.agent == null)
         {
             return ReturnState.SUCCESS;
         }
         else
-            return ReturnState.FAILURE;      
+            return ReturnState.FAILURE;
     }
 }
 
@@ -217,10 +224,10 @@ public class NodeMoveTowardsTarget : BT_Node
 {
     public override ReturnState Run(Agent a)
     {
-        AgentBehaviour agent = (AgentBehaviour)a;
+        LeadAgentBehaviour agent = (LeadAgentBehaviour)a;
 
         if (agent.targetPos == agent.targetGoal.transform.position)
-        {       
+        {
             if (agent.navMeshAgent.destination != agent.targetPos)
                 agent.navMeshAgent.SetDestination(agent.targetPos);
 
@@ -248,7 +255,7 @@ public class NodeTargetBall : BT_Node
 {
     public override ReturnState Run(Agent a)
     {
-        AgentBehaviour agent = (AgentBehaviour)a;
+        LeadAgentBehaviour agent = (LeadAgentBehaviour)a;
 
         agent.targetPos = agent.targetBall.transform.position;
         agent.targetType = TargetType.Ball;
@@ -260,7 +267,7 @@ public class NodeTargetAgent : BT_Node
 {
     public override ReturnState Run(Agent a)
     {
-        AgentBehaviour agent = (AgentBehaviour)a;
+        LeadAgentBehaviour agent = (LeadAgentBehaviour)a;
 
         if (agent.agentRole == AgentRole.Lead)
         {
@@ -290,7 +297,7 @@ public class NodeTargetGoal : BT_Node
 {
     public override ReturnState Run(Agent a)
     {
-        AgentBehaviour agent = (AgentBehaviour)a;
+        LeadAgentBehaviour agent = (LeadAgentBehaviour)a;
 
         agent.targetPos = agent.targetGoal.transform.position;
         agent.targetType = TargetType.Goal;
@@ -302,7 +309,7 @@ public class NodeTargetPowerup : BT_Node
 {
     public override ReturnState Run(Agent a)
     {
-        AgentBehaviour agent = (AgentBehaviour)a;
+        LeadAgentBehaviour agent = (LeadAgentBehaviour)a;
 
         if (agent.targetPowerup != null)
         {
@@ -319,7 +326,7 @@ public class NodeCaptureBall : BT_Node
 {
     public override ReturnState Run(Agent a)
     {
-        AgentBehaviour agent = (AgentBehaviour)a;
+        LeadAgentBehaviour agent = (LeadAgentBehaviour)a;
 
         if (agent.collidingWithBall)
         {
@@ -327,7 +334,7 @@ public class NodeCaptureBall : BT_Node
             return ReturnState.SUCCESS;
         }
 
-        return ReturnState.FAILURE;           
+        return ReturnState.FAILURE;
     }
 }
 
@@ -335,7 +342,7 @@ public class NodeCapturePowerup : BT_Node
 {
     public override ReturnState Run(Agent a)
     {
-        AgentBehaviour agent = (AgentBehaviour)a;
+        LeadAgentBehaviour agent = (LeadAgentBehaviour)a;
 
         if (agent.collidingWithPowerup)
         {
@@ -360,7 +367,7 @@ public class NodeScoreGoal : BT_Node
 {
     public override ReturnState Run(Agent a)
     {
-        AgentBehaviour agent = (AgentBehaviour)a;
+        LeadAgentBehaviour agent = (LeadAgentBehaviour)a;
 
         if (Vector3.Distance(agent.transform.position, agent.targetGoal.transform.position) < 0.02)
         {
@@ -377,7 +384,7 @@ public class NodeKickAgent : BT_Node
 {
     public override ReturnState Run(Agent a)
     {
-        AgentBehaviour agent = (AgentBehaviour)a;
+        LeadAgentBehaviour agent = (LeadAgentBehaviour)a;
 
         if (agent.collidingWithAgent)
         {
@@ -397,11 +404,11 @@ public class NodeKickAgent : BT_Node
     }
 }
 
-public class NodeIsBallCloseEnough: BT_Node
+public class NodeIsBallCloseEnough : BT_Node
 {
     public override ReturnState Run(Agent a)
     {
-        AgentBehaviour agent = (AgentBehaviour)a;
+        LeadAgentBehaviour agent = (LeadAgentBehaviour)a;
 
         float timeToBall = Vector3.Distance(agent.transform.position, agent.targetBall.transform.position) / agent.agentSpeed;
 
@@ -418,7 +425,7 @@ public class NodeIsPowerupCloseEnough : BT_Node
 {
     public override ReturnState Run(Agent a)
     {
-        AgentBehaviour agent = (AgentBehaviour)a;
+        LeadAgentBehaviour agent = (LeadAgentBehaviour)a;
 
         if (agent.targetPowerup == null)
         {
@@ -442,7 +449,7 @@ public class NodeIsPowerupSpeed : BT_Node
 {
     public override ReturnState Run(Agent a)
     {
-        AgentBehaviour agent = (AgentBehaviour)a;
+        LeadAgentBehaviour agent = (LeadAgentBehaviour)a;
 
         if (agent.targetPowerup != null &&
             agent.targetPowerup.IsActive())
@@ -459,7 +466,7 @@ public class NodeIsPowerupKick : BT_Node
 {
     public override ReturnState Run(Agent a)
     {
-        AgentBehaviour agent = (AgentBehaviour)a;
+        LeadAgentBehaviour agent = (LeadAgentBehaviour)a;
 
         if (agent.targetPowerup != null &&
             agent.targetPowerup.IsActive())
@@ -471,13 +478,15 @@ public class NodeIsPowerupKick : BT_Node
         return ReturnState.FAILURE;
     }
 }
+#endregion
 
 // Support Agent
+#region Support Agent Behaviour Nodes
 public class NodeDoesMyTeamHaveBall : BT_Node
 {
     public override ReturnState Run(Agent a)
     {
-        AgentBehaviour agent = (AgentBehaviour)a;
+        LeadAgentBehaviour agent = (LeadAgentBehaviour)a;
 
         if (agent != null &&
             agent.targetBall != null &&
@@ -497,9 +506,9 @@ public class NodeIsEnemyTeamAgentCloseEnough : BT_Node
 {
     public override ReturnState Run(Agent a)
     {
-        AgentBehaviour agent = (AgentBehaviour)a;
+        LeadAgentBehaviour agent = (LeadAgentBehaviour)a;
 
-        AgentBehaviour nearestEnemyAgent = agent.gameManager.GetNearestEnemyAgent(agent);
+        LeadAgentBehaviour nearestEnemyAgent = agent.gameManager.GetNearestEnemyAgent(agent);
         float timeToTarget = Vector3.Distance(agent.transform.position, nearestEnemyAgent.transform.position) / agent.agentSpeed;
 
         if (timeToTarget < 5)
@@ -512,7 +521,24 @@ public class NodeIsEnemyTeamAgentCloseEnough : BT_Node
     }
 }
 
+public class CheckTorches : BT_Node
+{
+    public override ReturnState Run(Agent a)
+    {
+        SupportAgentBehaviour supportAgent = a as SupportAgentBehaviour;
+
+        if (supportAgent)
+        {
+
+        }
+
+        return ReturnState.FAILURE;
+    }
+}
+#endregion
+
 // Enemy Agent
+#region Enemy Agent Behaviour Nodes
 public class NodeEnemyIsAgentInRange : BT_Node
 {
     public override ReturnState Run(Agent a)
@@ -540,7 +566,7 @@ public class NodeEnemyTargetAgent : BT_Node
             enemy.transform.LookAt(enemy.GetTargetAgent().transform.position);
             return ReturnState.SUCCESS;
         }
- 
+
 
         return ReturnState.FAILURE;
     }
@@ -563,7 +589,7 @@ public class NodeEnemyAttackTargetAgent : BT_Node
                 enemy.ResetEnemyCooldown();
                 return ReturnState.SUCCESS;
             }
-        }  
+        }
 
         return ReturnState.FAILURE;
     }
@@ -573,12 +599,24 @@ public class NodeEnemyIsThereAUnlitTorch : BT_Node
 {
     public override ReturnState Run(Agent a)
     {
-        EnemyBehaviour enemy = (EnemyBehaviour)a;
+        EnemyBehaviour enemy = a as EnemyBehaviour;
+        SupportAgentBehaviour agent = a as SupportAgentBehaviour;
 
-        if (enemy.CheckForUnlitTorches())
+        if (enemy)
         {
-            return ReturnState.SUCCESS;
+            if (enemy.CheckForUnlitTorches())
+            {
+                return ReturnState.SUCCESS;
+            }
         }
+        else if (agent)
+        {
+            if (agent.CheckForLitTorches())
+            {
+                return ReturnState.SUCCESS;
+            }
+        }
+
 
         return ReturnState.FAILURE;
     }
@@ -588,12 +626,28 @@ public class NodeEnemyAmIAlreadyTargetingATorch : BT_Node
 {
     public override ReturnState Run(Agent a)
     {
-        EnemyBehaviour enemy = (EnemyBehaviour)a;
-        Vector3 navMeshDest = enemy.GetNavMeshDestination();
-        
-        if (enemy.CompareDestinationToTorchPositions(navMeshDest))
+        EnemyBehaviour enemy = a as EnemyBehaviour;
+        SupportAgentBehaviour agent = a as SupportAgentBehaviour;
+
+        Vector3 navMeshDest = Vector3.zero;
+
+        if (enemy)
         {
-            return ReturnState.SUCCESS;
+            navMeshDest = enemy.GetNavMeshDestination();
+
+            if (enemy.CompareDestinationToTorchPositions(navMeshDest))
+            {
+                return ReturnState.SUCCESS;
+            }
+        }
+        else if (agent)
+        {
+            navMeshDest = agent.GetNavMeshDestination();
+
+            if (agent.CompareDestinationToTorchPositions(navMeshDest))
+            {
+                return ReturnState.SUCCESS;
+            }
         }
 
         return ReturnState.FAILURE;
@@ -604,11 +658,24 @@ public class NodeEnemySetDestinationToNearestUnlitTorch : BT_Node
 {
     public override ReturnState Run(Agent a)
     {
-        EnemyBehaviour enemy = (EnemyBehaviour)a;
-        if (enemy.SetDestinationToTorch())
+        EnemyBehaviour enemy = a as EnemyBehaviour;
+        SupportAgentBehaviour agent = a as SupportAgentBehaviour;
+
+        if(enemy)
         {
-            enemy.SetEnemyState(EnemyState.GoToTorch);
-            return ReturnState.SUCCESS;
+            if (enemy.SetDestinationToTorch(1))
+            {
+                enemy.SetEnemyState(EnemyState.GoToTorch);
+                return ReturnState.SUCCESS;
+            }
+        }
+        else if (agent)
+        {
+            if (agent.SetDestinationToTorch(0))
+            {
+                agent.SetAgentState(SupportAgentState.GoToTorch);
+                return ReturnState.SUCCESS;
+            }
         }
 
         return ReturnState.FAILURE;
@@ -619,9 +686,15 @@ public class NodeEnemyHaveIReachedTorch : BT_Node
 {
     public override ReturnState Run(Agent a)
     {
-        EnemyBehaviour enemy = (EnemyBehaviour)a;
+        EnemyBehaviour enemy = a as EnemyBehaviour;
+        SupportAgentBehaviour agent = a as SupportAgentBehaviour;
 
-        float dist = Vector3.Distance(enemy.transform.position, enemy.GetNavMeshDestination());
+        float dist = float.MaxValue;
+
+        if (enemy)
+            dist = Vector3.Distance(enemy.transform.position, enemy.GetNavMeshDestination());
+        else if (agent)
+            dist = Vector3.Distance(agent.transform.position, agent.GetNavMeshDestination());
 
         if (dist < 3)
         {
@@ -636,12 +709,15 @@ public class NodeEnemyLightUpTorch : BT_Node
 {
     public override ReturnState Run(Agent a)
     {
-        EnemyBehaviour enemy = (EnemyBehaviour)a;
+        EnemyBehaviour enemy = a as EnemyBehaviour;
+        SupportAgentBehaviour agent = a as SupportAgentBehaviour;
 
-        if (enemy.LightUpTorch())
+        if (enemy && enemy.LightUpTorch())
+            return ReturnState.SUCCESS;
+        else if (agent && agent.LightDownTorch())
             return ReturnState.SUCCESS;
 
-        return ReturnState.FAILURE; 
+        return ReturnState.FAILURE;
     }
 }
 
@@ -681,8 +757,8 @@ public class NodeEnemyHaveIReachedDestinationBase : BT_Node
 
         Vector3 destination = enemy.GetNavMeshDestination();
         destination.y = enemy.transform.position.y;
-        
-        if(!enemy.CheckDistanceBetween(enemy.transform.position, destination, 2))
+
+        if (!enemy.CheckDistanceBetween(enemy.transform.position, destination, 2))
         {
             return ReturnState.RUNNING;
         }
@@ -704,7 +780,7 @@ public class NodeEnemyAmIGoingToBase : BT_Node
         Vector3 destination = enemy.GetNavMeshDestination();
         destination.y = 1.1f;
 
-        if (enemy.GetEnemyState() == EnemyState.ReturnToBase && 
+        if (enemy.GetEnemyState() == EnemyState.ReturnToBase &&
             destination == new Vector3(25, 1.1f, -25))
         {
             return ReturnState.FAILURE;
@@ -746,7 +822,7 @@ public class NodeEnemyChaseAfterBall : BT_Node
     {
         EnemyBehaviour enemy = (EnemyBehaviour)a;
 
-        if(!enemy.CheckDistanceBetween(enemy.transform.position, enemy.GetBall().transform.position, 1))
+        if (!enemy.CheckDistanceBetween(enemy.transform.position, enemy.GetBall().transform.position, 1))
             return ReturnState.RUNNING;
 
         return ReturnState.SUCCESS;
@@ -776,3 +852,5 @@ public class NodeEnemyCaptureBall : BT_Node
         return ReturnState.SUCCESS;
     }
 }
+
+#endregion

@@ -36,7 +36,7 @@ public class ProjectileBehaviour : MonoBehaviour
     {
         if (other.gameObject.CompareTag("Agent"))
         {
-            other.GetComponent<AgentBehaviour>().AgentTakeDamage(projectileDamage);
+            other.GetComponent<LeadAgentBehaviour>().AgentTakeDamage(projectileDamage);
         }
 
 

@@ -4,7 +4,7 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.AI;
 
-public enum AgentState
+public enum LeadAgentState
 {
     Idle,
     Deciding,
@@ -33,11 +33,11 @@ public enum TargetType
     Powerup
 }
 
-public class AgentBehaviour : MonoBehaviour, Agent
+public class LeadAgentBehaviour : MonoBehaviour, Agent
 {
     public GameManagerBehaviour         gameManager;
     public int                          agentID;
-    public AgentState                   agentState;
+    public LeadAgentState                   agentState;
     public AgentRole                    agentRole;
     public PowerupState                 powerupState;
     public MeshRenderer                 meshRenderer;
@@ -53,7 +53,7 @@ public class AgentBehaviour : MonoBehaviour, Agent
     public TargetType                   targetType;
     public GoalBehaviour                targetGoal;
     public BallBehaviour                targetBall;
-    public AgentBehaviour               targetAgent;
+    public LeadAgentBehaviour           targetAgent;
     public PowerupBehaviour             targetPowerup;
     public GameObject                   targetSafePoint;
 
@@ -88,7 +88,7 @@ public class AgentBehaviour : MonoBehaviour, Agent
         this.name                       = "Agent";
         gameManager                     = p_gameManager;
         agentID                         = ID;
-        agentState                      = AgentState.Idle;
+        agentState                      = LeadAgentState.Idle;
         //agentRole                     = gameManager.GetRole(team);
         agentRole                       = AgentRole.Lead;
         targetType                      = TargetType.None;
@@ -333,7 +333,7 @@ public class AgentBehaviour : MonoBehaviour, Agent
         return false;
     }
 
-    public AgentBehaviour GetTargetAgent()
+    public LeadAgentBehaviour GetTargetAgent()
     {
         return targetAgent;
     }
@@ -351,6 +351,11 @@ public class AgentBehaviour : MonoBehaviour, Agent
     public float GetAgentCurrentHealth()
     {
         return agentCurrentHealth;
+    }
+
+    public float GetNavMeshAgentSpeed()
+    {
+        return navMeshAgent.speed;
     }
 
     private Selector HealthBranch()
