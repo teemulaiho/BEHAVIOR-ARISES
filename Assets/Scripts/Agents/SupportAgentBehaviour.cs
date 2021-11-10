@@ -20,6 +20,9 @@ public class SupportAgentBehaviour : MonoBehaviour, Agent
     [SerializeField] NavMeshAgent               navMeshAgent;
 
     [SerializeField] List<TorchBehaviour>       torchList;
+    [SerializeField] TorchBehaviour             targetTorch;
+
+    [SerializeField] float                      agentSpeed;
 
     public BT_Node                              bt_root;
 
@@ -34,6 +37,9 @@ public class SupportAgentBehaviour : MonoBehaviour, Agent
         torchList                               = new List<TorchBehaviour>();
         torchList.AddRange(gameManager.GetTorches());
 
+        agentSpeed                              = 2f;
+        navMeshAgent.speed                      = agentSpeed;
+
         if (gameManager.GetTeamPlayMode())
         {
             if (team == 0)
@@ -47,14 +53,15 @@ public class SupportAgentBehaviour : MonoBehaviour, Agent
         }
         else
         {
-            if (agentID == 0)
-                meshRenderer.material.color = Color.green;
-            else if (agentID == 1)
-                meshRenderer.material.color = Color.red;
-            else if (agentID == 2)
-                meshRenderer.material.color = Color.blue;
-            else if (agentID == 3)
-                meshRenderer.material.color = Color.black;
+            meshRenderer.material.color = Color.yellow;
+            //if (agentID == 0)
+            //    meshRenderer.material.color = Color.green;
+            //else if (agentID == 1)
+            //    meshRenderer.material.color = Color.red;
+            //else if (agentID == 2)
+            //    meshRenderer.material.color = Color.blue;
+            //else if (agentID == 3)
+            //    meshRenderer.material.color = Color.black;
         }
 
 
@@ -117,7 +124,7 @@ public class SupportAgentBehaviour : MonoBehaviour, Agent
             }
             else if (newLightIntensityValue == 0)
             {
-                if (t.GetTorchLightIntensity() >= 0)
+                if (t.GetTorchLightIntensity() > 0)
                 {
                     float dist = Vector3.Distance(transform.position, t.transform.position);
                     if (dist < minDist)
@@ -132,7 +139,8 @@ public class SupportAgentBehaviour : MonoBehaviour, Agent
 
         if (nearestTorch != null)
         {
-            navMeshAgent.destination = nearestTorch.transform.position;
+            targetTorch = nearestTorch;
+            navMeshAgent.destination = targetTorch.transform.position;
             return true;
         }
 
@@ -150,6 +158,7 @@ public class SupportAgentBehaviour : MonoBehaviour, Agent
             if (t.transform.position == destination)
             {
                 t.LightDownTorch();
+                RemoveTargetTorch();
                 return true;
             }
         }
@@ -172,6 +181,16 @@ public class SupportAgentBehaviour : MonoBehaviour, Agent
         }
 
         return false;
+    }
+
+    public TorchBehaviour GetTargetTorch()
+    {
+        return targetTorch;
+    }
+
+    public void RemoveTargetTorch()
+    {
+        targetTorch = null;
     }
 
     public Selector TorchBranch()
@@ -205,7 +224,7 @@ public class SupportAgentBehaviour : MonoBehaviour, Agent
         GoLightDownTorch.children.Add(new NodeEnemyHaveIReachedTorch());
 
         Inverter InvertTorchLightUpResult = new Inverter();
-        InvertTorchLightUpResult.children.Add(new NodeEnemyLightUpTorch());
+        InvertTorchLightUpResult.children.Add(new NodeEnemyLightUpDownTorch());
 
         GoLightDownTorch.children.Add(InvertTorchLightUpResult);
 

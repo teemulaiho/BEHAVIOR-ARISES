@@ -640,14 +640,9 @@ public class NodeEnemyAmIAlreadyTargetingATorch : BT_Node
                 return ReturnState.SUCCESS;
             }
         }
-        else if (agent)
+        else if (agent && agent.GetTargetTorch())
         {
-            navMeshDest = agent.GetNavMeshDestination();
-
-            if (agent.CompareDestinationToTorchPositions(navMeshDest))
-            {
-                return ReturnState.SUCCESS;
-            }
+            return ReturnState.SUCCESS;
         }
 
         return ReturnState.FAILURE;
@@ -698,6 +693,10 @@ public class NodeEnemyHaveIReachedTorch : BT_Node
 
         if (dist < 3)
         {
+            if (agent)
+            {
+                agent.RemoveTargetTorch();
+            }
             return ReturnState.SUCCESS;
         }
 
@@ -705,7 +704,7 @@ public class NodeEnemyHaveIReachedTorch : BT_Node
     }
 }
 
-public class NodeEnemyLightUpTorch : BT_Node
+public class NodeEnemyLightUpDownTorch : BT_Node
 {
     public override ReturnState Run(Agent a)
     {

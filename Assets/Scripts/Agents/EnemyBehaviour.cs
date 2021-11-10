@@ -443,7 +443,7 @@ public class EnemyBehaviour : MonoBehaviour, Agent
         GoLightUpTorch.children.Add(new NodeEnemyHaveIReachedTorch());
 
         Inverter InvertTorchLightUpResult = new Inverter();
-        InvertTorchLightUpResult.children.Add(new NodeEnemyLightUpTorch());
+        InvertTorchLightUpResult.children.Add(new NodeEnemyLightUpDownTorch());
 
         GoLightUpTorch.children.Add(InvertTorchLightUpResult);
 

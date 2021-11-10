@@ -24,17 +24,17 @@ public class GameManagerBehaviour : MonoBehaviour
     RectTransform agentUIPrefab;
     TorchBehaviour torchPrefab;
 
-    List<EnemyBehaviour> enemies                                    = new List<EnemyBehaviour>();
-    List<LeadAgentBehaviour> leadAgents                             = new List<LeadAgentBehaviour>();
-    List<SupportAgentBehaviour> supportAgents                       = new List<SupportAgentBehaviour>();
-    List<BallBehaviour> balls                                       = new List<BallBehaviour>();
-    List<GoalBehaviour> goals                                       = new List<GoalBehaviour>();
-    List<PowerupBehaviour> powerups                                 = new List<PowerupBehaviour>();
-    List<CubeBehaviour> cubes                                       = new List<CubeBehaviour>();
-    List<GameObject> safepoints                                     = new List<GameObject>();
-    List<TorchBehaviour> torches                                    = new List<TorchBehaviour>();
+    List<EnemyBehaviour> enemies                                        = new List<EnemyBehaviour>();
+    List<LeadAgentBehaviour> leadAgents                                 = new List<LeadAgentBehaviour>();
+    List<SupportAgentBehaviour> supportAgents                           = new List<SupportAgentBehaviour>();
+    List<BallBehaviour> balls                                           = new List<BallBehaviour>();
+    List<GoalBehaviour> goals                                           = new List<GoalBehaviour>();
+    List<PowerupBehaviour> powerups                                     = new List<PowerupBehaviour>();
+    List<CubeBehaviour> cubes                                           = new List<CubeBehaviour>();
+    List<GameObject> safepoints                                         = new List<GameObject>();
+    List<TorchBehaviour> torches                                        = new List<TorchBehaviour>();
     
-    public List<Sprite> uiSprites                                   = new List<Sprite>();
+    public List<Sprite> uiSprites                                       = new List<Sprite>();
     
     public Dictionary<LeadAgentBehaviour, BallBehaviour> chaseInfo      = new Dictionary<LeadAgentBehaviour, BallBehaviour>();
     public Dictionary<LeadAgentBehaviour, BallBehaviour> captureInfo    = new Dictionary<LeadAgentBehaviour, BallBehaviour>();
@@ -43,8 +43,10 @@ public class GameManagerBehaviour : MonoBehaviour
     public Dictionary<TMP_Text, LeadAgentBehaviour> scoreInfo           = new Dictionary<TMP_Text, LeadAgentBehaviour>();
     public Dictionary<Image, LeadAgentBehaviour> agentTargetInfo        = new Dictionary<Image, LeadAgentBehaviour>();
 
-    int agentAmount                                                 = 2;
-    int torchAmount                                                 = 4;
+    int leadAgentAmount                                                 = 4;
+    int supportAgentAmount                                              = 1;
+    int enemyAmount                                                     = 1;
+    int torchAmount                                                     = 4;
     
     bool toggle;
     public bool isTeamPlayActive;
@@ -101,17 +103,24 @@ public class GameManagerBehaviour : MonoBehaviour
 
             // Enemy Instantiate.
             {
+                GameObject enemyParent = new GameObject("ENEMIES");
                 enemyPrefab = Resources.Load<EnemyBehaviour>("Prefabs/Enemy");
-                enemyPrefab = Instantiate(enemyPrefab);
-                enemyPrefab.transform.position = new Vector3(15, 2, -25);
-                enemies.Add(enemyPrefab);
+
+                for (int i = 0; i < enemyAmount; i++)
+                {
+                    enemyPrefab = Instantiate(enemyPrefab);
+                    enemyPrefab.name = "Enemy";
+                    enemyPrefab.transform.SetParent(enemyParent.transform);
+                    enemyPrefab.transform.position = new Vector3(Random.Range(10, 20), 2, Random.Range(-20, -30));
+                    enemies.Add(enemyPrefab);
+                }
             }
 
             // Agent Instantiate.
             {
                 GameObject agentParent = new GameObject("AGENTS");
                 leadAgentPrefab = Resources.Load<LeadAgentBehaviour>("Prefabs/LeadAgent");
-                for (int i = 0; i < agentAmount; i++)
+                for (int i = 0; i < leadAgentAmount; i++)
                 {
                     leadAgentPrefab = Instantiate(leadAgentPrefab);
                     leadAgentPrefab.transform.SetParent(agentParent.transform);
@@ -121,7 +130,7 @@ public class GameManagerBehaviour : MonoBehaviour
                 }
 
                 supportAgentPrefab = Resources.Load<SupportAgentBehaviour>("Prefabs/SupportAgent");
-                for (int i = 0; i < agentAmount; i++)
+                for (int i = 0; i < supportAgentAmount; i++)
                 {
                     supportAgentPrefab = Instantiate(supportAgentPrefab);
                     supportAgentPrefab.transform.SetParent(agentParent.transform);
@@ -182,7 +191,7 @@ public class GameManagerBehaviour : MonoBehaviour
                 safepointPrefab = Resources.Load<GameObject>("Prefabs/SafePoint");
                 safepointPrefab = Instantiate(safepointPrefab);
                 safepointPrefab.tag = "SafePoint";
-                safepointPrefab.transform.position = new Vector3(10,1.1f,-10);
+                safepointPrefab.transform.position = new Vector3(5,1.1f,-25);
                 safepoints.Add(safepointPrefab);
             }
         }
