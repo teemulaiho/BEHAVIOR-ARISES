@@ -51,6 +51,8 @@ public class EnemyBehaviour : MonoBehaviour, Agent
 
 
     [SerializeField] float                      enemySpeed;
+    [SerializeField] float                      sabotageTimer;
+    [SerializeField] float                      sabotageStateDT;
 
     [SerializeField] public BT_Node             bt_root;
 
@@ -92,6 +94,9 @@ public class EnemyBehaviour : MonoBehaviour, Agent
         agentsInRangeList                       = new List<LeadAgentBehaviour>();
         enemySpeed                              = 3.5f;
 
+        sabotageTimer                           = 3f;
+        sabotageStateDT                         = 0;
+
 
         healthBar.SetMaxHealth(enemyMaxHealth);
 
@@ -115,11 +120,19 @@ public class EnemyBehaviour : MonoBehaviour, Agent
         {
             navMeshAgent.speed = enemySpeed * 0.5f;
             meshRenderer.material.color = Color.blue;
+
+            sabotageStateDT += Time.deltaTime;
         }
         else
         {
             navMeshAgent.speed = enemySpeed;
             meshRenderer.material.color = Color.red;
+        }
+
+        if (sabotageStateDT > sabotageTimer)
+        {
+            enemySabotageState = EnemySabotageState.None;
+            sabotageStateDT = 0f;
         }
 
         bt_root.Run(this);
@@ -189,7 +202,6 @@ public class EnemyBehaviour : MonoBehaviour, Agent
     {
         if (targetAgent.GetAgentCurrentHealth() > 0)
         {
-            Debug.Log("Attacking taget agent.");
             foreach (ProjectileBehaviour b in bulletList)
             {
                 b.gameObject.SetActive(true);
@@ -327,7 +339,6 @@ public class EnemyBehaviour : MonoBehaviour, Agent
                 }
             }
         }
-
 
         if (nearestTorch != null)
         {

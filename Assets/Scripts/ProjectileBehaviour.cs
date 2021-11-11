@@ -4,20 +4,20 @@ using UnityEngine;
 
 public class ProjectileBehaviour : MonoBehaviour
 {
-    Vector3 targetDirection;
-    float projectileSpeed;
-    float projectileDamage;
-    bool fired;
+    Vector3                         targetDirection;
+    float                           projectileSpeed;
+    float                           projectileDamage;
+    bool                            fired;
 
     public void Init(Vector3 startPos, Vector3 targetPos)
     {
         if (!fired)
         {
-            fired = true;
-            transform.position = startPos;
-            targetDirection = (targetPos - transform.position).normalized;
-            projectileSpeed = 4f;
-            projectileDamage = 200f;
+            fired                   = true;
+            transform.position      = startPos;
+            targetDirection         = (targetPos - transform.position).normalized;
+            projectileSpeed         = 4f;
+            projectileDamage        = 200f;
         }
     }
     
@@ -38,7 +38,6 @@ public class ProjectileBehaviour : MonoBehaviour
         {
             other.GetComponent<LeadAgentBehaviour>().AgentTakeDamage(projectileDamage);
         }
-
 
         if(!other.gameObject.CompareTag("Enemy"))
         {

@@ -156,30 +156,13 @@ public class LeadAgentBehaviour : MonoBehaviour, Agent
             // Lead Agent Behaviour Tree
             if (agentRole == AgentRole.Lead)
             {
-                Debug.Log("I Am A Lead Agent.");
-
                 root.children.Add(HealthBranch());
                 root.children.Add(BallBranch());
                 root.children.Add(PowerupBranch());
             }
 
-            // Support Agent Behaviour Tree
-            else if (agentRole == AgentRole.Support)
-            {
-                Debug.Log("I am a Support Agent.");
-
-                root.children.Add(DefenceBranch());
-            }
-
-            // Healer Agent
-            else if (agentRole == AgentRole.Healer)
-            {
-                Debug.Log("I am a Healer Agent.");
-            }
-
             bt_root = root;
         }
-        // Agent Behaviour Tree End
     }
 
     public void AgentUpdate()
@@ -188,11 +171,6 @@ public class LeadAgentBehaviour : MonoBehaviour, Agent
         {
             transform.position = new Vector3(Random.Range(0, 49), 4, Random.Range(-1, -49));
             rb.velocity = Vector3.zero;
-        }
-
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            AgentTakeDamage(20);
         }
 
         if (transform.position.y < -10 ||
@@ -244,6 +222,7 @@ public class LeadAgentBehaviour : MonoBehaviour, Agent
             collidingWithSafePoint = true;
         }
     }
+    
     private void OnTriggerExit(Collider other)
     {
         if (collidingWithSafePoint)
@@ -264,9 +243,9 @@ public class LeadAgentBehaviour : MonoBehaviour, Agent
     {
         if (targetBall != null)
         {
-            if (targetBall.agent == this)
+            if (targetBall.GetAgent() == this)
             {
-                targetBall.agent = null;
+                targetBall.RemoveAgent();
             }
         }
     }
@@ -293,10 +272,6 @@ public class LeadAgentBehaviour : MonoBehaviour, Agent
         {
             kickForce *= 2f;
             transform.localScale = kickForce.x / 50 * agentScale;
-        }
-        else
-        {
-
         }
     }
 
@@ -385,15 +360,6 @@ public class LeadAgentBehaviour : MonoBehaviour, Agent
         return PowerupBranch;
     }
     
-    private Selector DefenceBranch()
-    {
-        Selector DefenceBranch = new Selector();
-        DefenceBranch.children.Add(DoesMyTeamHaveBall());
-        DefenceBranch.children.Add(AttackNearbyEnemyAgent());
-
-        return DefenceBranch;
-    }
-
     private Sequencer IsMyHealthBelow25Percent()
     {
         Inverter HealthAbove25PercentInverter = new Inverter();

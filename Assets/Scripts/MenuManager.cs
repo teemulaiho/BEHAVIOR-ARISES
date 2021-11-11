@@ -6,30 +6,19 @@ using UnityEngine.UI;
 
 public class MenuManager : MonoBehaviour
 {
-    static MenuManager instance;
-    Scene currentScene;
-    public List<GameObject> moshbots;
-    public List<Button> buttons;
+    static MenuManager                  instance;
+    Scene                               currentScene;
+    public List<GameObject>             moshbots;
+    public List<Button>                 buttons;
 
-    public Animator transition;
-    public float transitionTime = 1f;
+    public Animator                     transition;
+    public float                        transitionTime = 1f;
 
-    public bool allowInput = false;
-
-    private void OnEnable()
-    {
-
-    }
+    public bool                         allowInput = false;
 
     private void Awake()
     {
         CheckForDuplicateGameObjects();     // Remove DontDestroyOnLoad Duplicates.
-    }
-
-    // Start is called before the first frame update
-    void Start()
-    {
-
     }
 
     // Update is called once per frame
@@ -63,7 +52,6 @@ public class MenuManager : MonoBehaviour
             if (SceneManager.GetActiveScene().name != "MainMenu" &&
                 SceneManager.GetActiveScene().name != "MoshbotViewer")
             {
-                //SceneManager.LoadScene("MainMenu");
                 LoadSceneMainMenu();
             }
         }
@@ -78,7 +66,6 @@ public class MenuManager : MonoBehaviour
         {
             foreach (Button b in buttons)
             {
-                Debug.Log(b.name);
                 SetButtonFunctions(b);
             }
         }
@@ -113,19 +100,16 @@ public class MenuManager : MonoBehaviour
 
     public void LoadGameScene()
     {
-        //SceneManager.LoadScene("Level 1");
         StartCoroutine(LoadScene("Level 1"));
     }
 
     public void LoadSceneMainMenu()
     {
-        //SceneManager.LoadScene("MainMenu");
         StartCoroutine(LoadScene("MainMenu"));
     }
 
     public void LoadSceneMoshBotViewer()
     {
-        //SceneManager.LoadScene("MoshbotViewer");
         StartCoroutine(LoadScene("MoshbotViewer"));
     }
 

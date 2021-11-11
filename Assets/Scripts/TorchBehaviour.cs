@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class TorchBehaviour : MonoBehaviour
 {
@@ -17,6 +15,7 @@ public class TorchBehaviour : MonoBehaviour
         light.intensity = 1;
     }
 
+    // TorchUpdate Intentionally Empty
     public void TorchUpdate()
     {
 

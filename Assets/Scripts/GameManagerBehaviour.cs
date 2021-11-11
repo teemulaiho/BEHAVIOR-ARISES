@@ -12,6 +12,7 @@ public class GameManagerBehaviour : MonoBehaviour
     public HealthbarBehaviour[]healthBars;
     public TMP_Text[] agentScoreTexts;
     public Image[] agentImages;
+    public Image[] agentIcons;
 
     EnemyBehaviour enemyPrefab;
     LeadAgentBehaviour leadAgentPrefab;
@@ -42,42 +43,20 @@ public class GameManagerBehaviour : MonoBehaviour
 
     public Dictionary<TMP_Text, LeadAgentBehaviour> scoreInfo           = new Dictionary<TMP_Text, LeadAgentBehaviour>();
     public Dictionary<Image, LeadAgentBehaviour> agentTargetInfo        = new Dictionary<Image, LeadAgentBehaviour>();
-
-    int leadAgentAmount                                                 = 0;
+    public Dictionary<Image, LeadAgentBehaviour> agentIconInfo          = new Dictionary<Image, LeadAgentBehaviour>();
+    
+    int leadAgentAmount                                                 = 3;
     int supportAgentAmount                                              = 1;
     int enemyAmount                                                     = 1;
     int torchAmount                                                     = 4;
     
-    bool toggle;
     public bool isTeamPlayActive;
-
-
-    // Is Called Before Start()
-    private void Awake()
-    {
-        Debug.Log("Awake GameManager.");
-
-        //screenUIPrefab = Resources.Load<Canvas>("Prefabs/Canvas");
-        //screenUI = Instantiate(screenUIPrefab);
-    }
 
     // Start is called before the first frame update
     void Start()
     {
-        Debug.Log("Start GameManager.");
-
         // Instantiate GameObjects
         {
-            // UI Instantiate
-            {
-                //agentUIPrefab = Resources.Load<RectTransform>("Prefabs/UI/AgentUI");
-                //agentUIPrefab = Instantiate(agentUIPrefab);
-                //agentUIPrefab.transform.parent = screenUI.transform;
-                //agentUIPrefab.localPosition = Vector3.zero;
-                //agentUIPrefab.anchorMin = new Vector2(0, 1);
-                //agentUIPrefab.anchorMax = new Vector2(0, 1);
-            }
-
             // Torch Instantiate
             {
                 GameObject torchParent = new GameObject("TORCHES");
@@ -173,19 +152,6 @@ public class GameManagerBehaviour : MonoBehaviour
                 powerups.Add(powerupPrefab);
             }
 
-            // Cube Instantiate.
-            {
-                //GameObject cubeParent = new GameObject("CUBES");
-                //cubePrefab = Resources.Load<CubeBehaviour>("Prefabs/Cube");
-                //for (int i = 0; i < 100; i++)
-                //{
-                //    cubePrefab = Instantiate(cubePrefab);
-                //    cubePrefab.transform.SetParent(cubeParent.transform);
-                //    cubePrefab.transform.position = new Vector3(Random.Range(1, 50), Random.Range(2, 10), Random.Range(-1, -50));
-                //    cubes.Add(cubePrefab);
-                //}
-            }
-
             // Safe Point Instantiate
             {
                 safepointPrefab = Resources.Load<GameObject>("Prefabs/SafePoint");
@@ -232,37 +198,64 @@ public class GameManagerBehaviour : MonoBehaviour
             {
                 powerups[i].Init(this);
             }
-
-            for (int i = 0; i < cubes.Count; i++)
-            {
-                cubes[i].Init(this);
-            }
         }
 
         // Initialize Screen UI
         {
             // Initialize Health bars
             {
+                foreach (HealthbarBehaviour hb in healthBars)
+                {
+                    hb.gameObject.SetActive(false);
+                }
+
                 for (int i = 0; i < leadAgents.Count; i++)
                 {
+                    healthBars[i].gameObject.SetActive(true);
                     healthBars[i].SetMaxHealth(leadAgents[i].agentMaxHealth);
                 }
             }
-        }
 
-        // Initialize UI ScoreTexts With Agents
-        {
-            for (int i = 0; i < leadAgents.Count; i++)
+            // Initialize UI ScoreTexts With Agents
             {
-                scoreInfo.Add(agentScoreTexts[i], leadAgents[i]);
+                foreach (TMP_Text a in agentScoreTexts)
+                {
+                    a.gameObject.SetActive(false);
+                }
+
+                for (int i = 0; i < leadAgents.Count; i++)
+                {
+                    agentScoreTexts[i].gameObject.SetActive(true);
+                    scoreInfo.Add(agentScoreTexts[i], leadAgents[i]);
+                }
             }
-        }
 
-        // Initialize UI AgentTargets With Agents
-        {
-            for (int i = 0; i < leadAgents.Count; i++)
+            // Initialize UI AgentIcons With Agent
             {
-                agentTargetInfo.Add(agentImages[i], leadAgents[i]);
+                foreach (Image i in agentIcons)
+                {
+                    i.gameObject.SetActive(false);
+                }
+
+                for (int i = 0; i < leadAgents.Count; i++)
+                {
+                    agentIcons[i].gameObject.SetActive(true);
+                    agentIconInfo.Add(agentIcons[i], leadAgents[i]);
+                }
+            }
+
+            // Initialize UI AgentTargets With Agents
+            {
+                foreach (Image i in agentImages)
+                {
+                    i.gameObject.SetActive(false);
+                }
+
+                for (int i = 0; i < leadAgents.Count; i++)
+                {
+                    agentImages[i].gameObject.SetActive(true);
+                    agentTargetInfo.Add(agentImages[i], leadAgents[i]);
+                }
             }
         }
     }
@@ -270,12 +263,6 @@ public class GameManagerBehaviour : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.A))
-        {
-            toggle = !toggle;
-            Debug.Log("toggle: " + toggle);
-        }
-
         foreach (TorchBehaviour t in torches)
         {
             t.TorchUpdate();
@@ -357,24 +344,6 @@ public class GameManagerBehaviour : MonoBehaviour
                 }
             }
         }
-
-        //for (int i = 0; i < cubes.Count; i++)
-        //{
-        //    cubes[i].CubeUpdate();
-        //}
-    }
-
-    public BallBehaviour GetFreeBall(LeadAgentBehaviour agent)
-    {
-        for (int i = 0; i < balls.Count; i++)
-        {
-            if (balls[i].GetState() == BallState.Free)
-                return balls[i];
-            else
-                return balls[i];
-        }   
-        
-        return null;
     }
 
     public BallBehaviour GetBall()
@@ -400,57 +369,6 @@ public class GameManagerBehaviour : MonoBehaviour
         }
 
         return null;
-    }
-
-    public void SpawnPowerup()
-    {
-
-    }
-
-    public AgentRole GetRole(int team)
-    {
-        int noneCount = 0;
-        int leadCount = 0;
-        int supportCount = 0;
-
-        for (int i = 0; i < leadAgents.Count; i++)
-        {
-            if (leadAgents[i].team == team)
-            {
-                if (leadAgents[i].agentRole == AgentRole.None)
-                {
-                    noneCount++;
-                }
-                else if (leadAgents[i].agentRole == AgentRole.Lead)
-                {
-                    leadCount++;
-                }
-                else if (leadAgents[i].agentRole == AgentRole.Support)
-                {
-                    supportCount++;
-                }
-            } 
-        }
-
-        if(leadCount == supportCount)
-        {
-            return AgentRole.Lead;
-        }
-        else if (leadCount > supportCount)
-        {
-            return AgentRole.Support;
-        }
-        else if (supportCount > leadCount)
-        {
-            return AgentRole.Lead;
-        }
-
-        return AgentRole.None;
-    }
-
-    public void SetAgent(LeadAgentBehaviour p_agent)
-    {
-        balls[0].SetAgent(p_agent);
     }
 
     public LeadAgentBehaviour GetNearestEnemyAgent(LeadAgentBehaviour p_agent)
@@ -479,89 +397,12 @@ public class GameManagerBehaviour : MonoBehaviour
         return null;
     }
 
-    // If vector3zero == not being chased
-    public bool AmIBeingChased(BallBehaviour ball, ref Vector3 pos)
-    {
-        pos = Vector3.zero;
-
-        if (ball == null)
-            return false;
-
-        if (chaseInfo.Count == 0)
-            return false;
-
-        foreach(var pair in chaseInfo)
-        {
-            if (pair.Value == ball)
-            {
-                pos = pair.Key.transform.position;
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public bool AmICaptured(BallBehaviour ball, out LeadAgentBehaviour agent)
-    {
-        agent = null;
-
-        if (ball == null)
-            return false;
-
-        if (captureInfo.Count == 0)
-            return false;
-
-        foreach (var pair in captureInfo)
-        {
-            if (pair.Value == ball)
-            {
-                agent = pair.Key;
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public void UpdateChaseData(LeadAgentBehaviour agent, BallBehaviour ball) // agent behavior calling this
-    {
-        if (!chaseInfo.ContainsKey(agent))
-            chaseInfo[agent] = ball;
-
-        if (captureInfo.ContainsKey(agent))
-            captureInfo.Remove(agent);
-    }
-
-    public void UpdateCaptureData(LeadAgentBehaviour agent, BallBehaviour ball)
-    {
-        captureInfo[agent] = ball;
-
-        if (chaseInfo.ContainsKey(agent))
-            chaseInfo.Remove(agent);
-    }
-
     public void RemoveCaptureData(LeadAgentBehaviour agent)
     {
         if (captureInfo.ContainsKey(agent))
         {
-            //Debug.Log("GameManagerBehavior.cs - captureInfo contains. Agent: " + agent.meshRenderer.material.color); 
-            if (captureInfo.Remove(agent))
-            {
-                //Debug.Log("GameManagerBehavior.cs - Successfully removed agent: " + agent.meshRenderer.material.color + " from captureInfo.");
-            }
+            captureInfo.Remove(agent);
         }
-        else
-        {
-
-            //Debug.Log("GameManagerBehavior.cs - Cannot find agent: " + agent.meshRenderer.material.color + " from captureInfo.");
-        }
-    }
-
-    public void Goal(BallBehaviour ball, LeadAgentBehaviour agent)
-    {
-        captureInfo.Remove(agent);
-        agent.AddScore();
     }
 
     public GoalBehaviour GetGoal(LeadAgentBehaviour agent)

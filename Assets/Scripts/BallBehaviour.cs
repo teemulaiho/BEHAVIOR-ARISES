@@ -11,23 +11,22 @@ public enum BallState
 
 public class BallBehaviour : MonoBehaviour
 {
-    public GameManagerBehaviour gameManager;
-    public Rigidbody rigidBody;
-    public BallState ballState;
-    public LeadAgentBehaviour agent;
-    public EnemyBehaviour enemy;
-    public Vector3 fleefrom;
-    public Vector3 newPos;
-    public float speed = 2.5f;
-    public float defaultSpeed = 2.5f;
+    [SerializeField] GameManagerBehaviour   gameManager;
+    [SerializeField] Rigidbody              rigidBody;
+    [SerializeField] BallState              ballState;
+    [SerializeField] LeadAgentBehaviour     agent;
+    [SerializeField] EnemyBehaviour         enemy;
+    [SerializeField] Vector3                fleeFrom;
+    [SerializeField] Vector3                newPos;
+    [SerializeField] float                  speed = 2.5f;
+    [SerializeField] float                  defaultSpeed = 2.5f;
 
     public void Init(GameManagerBehaviour p_gameManger)
     {
-        Debug.Log("Init BallBehaviour.");
-        gameManager = p_gameManger;
-        rigidBody = GetComponent<Rigidbody>();
-        ballState = BallState.Free;
-        agent = null;
+        gameManager                         = p_gameManger;
+        rigidBody                           = GetComponent<Rigidbody>();
+        ballState                           = BallState.Free;
+        agent                               = null;
     }
 
     public void BallUpdate()
@@ -55,6 +54,11 @@ public class BallBehaviour : MonoBehaviour
     public BallState GetState()
     {
         return ballState;
+    }
+
+    public void RemoveAgent()
+    {
+        agent = null;
     }
 
     public void SetAgent(Agent a)
@@ -122,5 +126,15 @@ public class BallBehaviour : MonoBehaviour
         transform.position = new Vector3(25, 3, -25);
         speed = defaultSpeed;
         ballState = BallState.Free;
+    }
+
+    public BallBehaviour Getball()
+    {
+        return this;
+    }
+
+    public LeadAgentBehaviour GetAgent()
+    {
+        return agent;
     }
 }

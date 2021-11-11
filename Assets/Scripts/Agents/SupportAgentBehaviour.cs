@@ -221,19 +221,6 @@ public class SupportAgentBehaviour : MonoBehaviour, Agent
         return false;
     }
 
-
-    public bool CompareDestinationToTorchPositions(Vector3 destination)
-    {
-        foreach (TorchBehaviour t in torchList)
-        {
-            if (t.transform.position.x == destination.x &&
-                t.transform.position.z == destination.z)
-                return true;
-        }
-
-        return false;
-    }
-
     public TorchBehaviour GetTargetTorch()
     {
         return targetTorch;
@@ -287,12 +274,16 @@ public class SupportAgentBehaviour : MonoBehaviour, Agent
         Sequencer SabotageBranch = new Sequencer();
 
         Sequencer IsEnemyNearby = new Sequencer();
+        Inverter IsEnemySabotagedInverter = new Inverter();
+        IsEnemySabotagedInverter.children.Add(new NodeIsEnemyAlreadySabotaged());
+
+        IsEnemyNearby.children.Add(IsEnemySabotagedInverter);
         IsEnemyNearby.children.Add(new NodeIsEnemyNearby());
         IsEnemyNearby.children.Add(new NodeTargetNearestEnemy());
 
         Sequencer SabotageEnemy = new Sequencer();
         SabotageEnemy.children.Add(new NodeIsEnemyInRange());
-        SabotageEnemy.children.Add(new NodeIsEnemyAlreadySabotaged());
+        SabotageEnemy.children.Add(IsEnemySabotagedInverter);
         SabotageEnemy.children.Add(new NodeSabotageEnemy());
 
         SabotageBranch.children.Add(IsEnemyNearby);

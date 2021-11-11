@@ -74,19 +74,6 @@ public class Inverter : BT_Node
     }
 }
 
-public class NodePrint : BT_Node
-{
-    private string text = "";
-    public NodePrint(string text)
-    {
-        this.text = text;
-    }
-    public override ReturnState Run(Agent a)
-    {
-        return ReturnState.SUCCESS;
-    }
-}
-
 #endregion
 
 // Generic Behaviour
@@ -103,30 +90,6 @@ public class NodeCheckHealthAbove25Percent : BT_Node
             return ReturnState.SUCCESS;
         }
 
-        return ReturnState.FAILURE;
-    }
-}
-
-public class NodeCheckHealthAbove50Percent : BT_Node
-{
-    public override ReturnState Run(Agent a)
-    {
-        LeadAgentBehaviour agent = (LeadAgentBehaviour)a;
-
-        if (agent.agentCurrentHealth / agent.agentMaxHealth > 0.5f &&
-            !agent.isHealing)
-        {
-            return ReturnState.SUCCESS;
-        }
-
-        return ReturnState.FAILURE;
-    }
-}
-
-public class NodeTargetHealthPotion : BT_Node
-{
-    public override ReturnState Run(Agent agent)
-    {
         return ReturnState.FAILURE;
     }
 }
@@ -179,7 +142,7 @@ public class NodeDoIHaveBall : BT_Node
     {
         LeadAgentBehaviour agent = (LeadAgentBehaviour)a;
 
-        if (agent.targetBall.agent == agent)
+        if (agent.targetBall.GetAgent() == agent)
         {
             agent.RemoveTargetAgent();
             return ReturnState.SUCCESS;
@@ -195,8 +158,8 @@ public class NodeDoesSomeoneElseHaveBall : BT_Node
     {
         LeadAgentBehaviour agent = (LeadAgentBehaviour)a;
 
-        if (agent.targetBall.agent != null &&
-            agent.targetBall.agent != agent)
+        if (agent.targetBall.GetAgent() != null &&
+            agent.targetBall.GetAgent() != agent)
         {
             return ReturnState.SUCCESS;
         }
@@ -211,7 +174,7 @@ public class NodeIsBallFree : BT_Node
     {
         LeadAgentBehaviour agent = (LeadAgentBehaviour)a;
 
-        if (agent.targetBall.agent == null)
+        if (agent.targetBall.GetAgent() == null)
         {
             return ReturnState.SUCCESS;
         }
@@ -271,11 +234,11 @@ public class NodeTargetAgent : BT_Node
 
         if (agent.agentRole == AgentRole.Lead)
         {
-            if (agent.targetBall.agent != null &&
-                agent.targetBall.agent != agent)
+            if (agent.targetBall.Getball().GetAgent() != null &&
+                agent.targetBall.Getball().GetAgent() != agent)
             {
-                agent.targetPos = agent.targetBall.agent.transform.position;
-                agent.targetAgent = agent.targetBall.agent;
+                agent.targetPos = agent.targetBall.GetAgent().transform.position;
+                agent.targetAgent = agent.targetBall.GetAgent();
                 agent.targetType = TargetType.Agent;
                 return ReturnState.SUCCESS;
             }
@@ -351,14 +314,6 @@ public class NodeCapturePowerup : BT_Node
             return ReturnState.SUCCESS;
         }
 
-        return ReturnState.FAILURE;
-    }
-}
-
-public class NodeCapture : BT_Node
-{
-    public override ReturnState Run(Agent agent)
-    {
         return ReturnState.FAILURE;
     }
 }
@@ -489,7 +444,6 @@ public class NodeTargetNearestEnemy : BT_Node
     {
         SupportAgentBehaviour agent = a as SupportAgentBehaviour;
 
-        float min = float.MaxValue;
         EnemyBehaviour nearestEnemy = null;
 
         nearestEnemy = agent.GetNearestEnemy();
@@ -546,7 +500,7 @@ public class NodeIsEnemyAlreadySabotaged : BT_Node
     {
         SupportAgentBehaviour agent = a as SupportAgentBehaviour;
 
-        if (!agent.GetNearestEnemy().IsSabotaged())
+        if (agent.GetNearestEnemy().IsSabotaged())
             return ReturnState.SUCCESS;
 
         return ReturnState.FAILURE;
@@ -576,9 +530,9 @@ public class NodeDoesMyTeamHaveBall : BT_Node
 
         if (agent != null &&
             agent.targetBall != null &&
-            agent.targetBall.agent != null)
+            agent.targetBall.GetAgent() != null)
         {
-            if (agent.targetBall.agent.team == agent.team)
+            if (agent.targetBall.GetAgent().team == agent.team)
             {
                 return ReturnState.SUCCESS;
             }
@@ -604,21 +558,6 @@ public class NodeIsEnemyTeamAgentCloseEnough : BT_Node
         }
 
         return ReturnState.SUCCESS;
-    }
-}
-
-public class CheckTorches : BT_Node
-{
-    public override ReturnState Run(Agent a)
-    {
-        SupportAgentBehaviour supportAgent = a as SupportAgentBehaviour;
-
-        if (supportAgent)
-        {
-
-        }
-
-        return ReturnState.FAILURE;
     }
 }
 #endregion
@@ -652,7 +591,6 @@ public class NodeEnemyTargetAgent : BT_Node
             enemy.transform.LookAt(enemy.GetTargetAgent().transform.position);
             return ReturnState.SUCCESS;
         }
-
 
         return ReturnState.FAILURE;
     }
@@ -702,7 +640,6 @@ public class NodeEnemyIsThereAUnlitTorch : BT_Node
                 return ReturnState.SUCCESS;
             }
         }
-
 
         return ReturnState.FAILURE;
     }
