@@ -482,6 +482,92 @@ public class NodeIsPowerupKick : BT_Node
 
 // Support Agent
 #region Support Agent Behaviour Nodes
+
+public class NodeTargetNearestEnemy : BT_Node
+{
+    public override ReturnState Run(Agent a)
+    {
+        SupportAgentBehaviour agent = a as SupportAgentBehaviour;
+
+        float min = float.MaxValue;
+        EnemyBehaviour nearestEnemy = null;
+
+        nearestEnemy = agent.GetNearestEnemy();
+
+        if (nearestEnemy)
+        {
+            agent.SetNavMeshDestination(nearestEnemy.transform.position);
+            agent.SetAgentState(SupportAgentState.ChaseAfterEnemy);
+
+            return ReturnState.SUCCESS;
+        }
+
+
+        return ReturnState.FAILURE;
+    }
+}
+public class NodeIsEnemyNearby : BT_Node
+{
+    public override ReturnState Run(Agent a)
+    {
+        SupportAgentBehaviour agent = a as SupportAgentBehaviour;
+
+        foreach (EnemyBehaviour e in agent.GetEnemy())
+        {
+            if (agent.CheckDistanceBetween(agent.transform.position, e.transform.position, 5))
+            {
+                return ReturnState.SUCCESS;
+            }
+        }
+
+        return ReturnState.FAILURE;
+    }
+}
+
+public class NodeIsEnemyInRange : BT_Node
+{
+    public override ReturnState Run(Agent a)
+    {
+        SupportAgentBehaviour agent = a as SupportAgentBehaviour;
+
+        if (agent.CheckDistanceBetween(agent.transform.position,
+            agent.GetNavMeshDestination(), 3))
+        {
+            return ReturnState.SUCCESS;
+        }
+
+        return ReturnState.FAILURE;
+    }
+}
+
+public class NodeIsEnemyAlreadySabotaged : BT_Node
+{
+    public override ReturnState Run(Agent a)
+    {
+        SupportAgentBehaviour agent = a as SupportAgentBehaviour;
+
+        if (!agent.GetNearestEnemy().IsSabotaged())
+            return ReturnState.SUCCESS;
+
+        return ReturnState.FAILURE;
+    }
+}
+
+public class NodeSabotageEnemy : BT_Node
+{
+    public override ReturnState Run(Agent a)
+    {
+        SupportAgentBehaviour agent = a as SupportAgentBehaviour;
+
+        if(agent.Sabotage(agent.GetNearestEnemy()))
+        {
+            return ReturnState.SUCCESS;
+        }
+
+        return ReturnState.FAILURE;
+    }
+}
+
 public class NodeDoesMyTeamHaveBall : BT_Node
 {
     public override ReturnState Run(Agent a)

@@ -6,6 +6,7 @@ using UnityEngine.AI;
 public enum SupportAgentState
 {
     GoToTorch,
+    ChaseAfterEnemy,
     None
 }
 
@@ -69,6 +70,7 @@ public class SupportAgentBehaviour : MonoBehaviour, Agent
         {
             Selector root = new Selector();     // Temporary root.
 
+            root.children.Add(SabotageBranch());
             root.children.Add(TorchBranch());
             bt_root = root;
         }
@@ -136,7 +138,6 @@ public class SupportAgentBehaviour : MonoBehaviour, Agent
             }
         }
 
-
         if (nearestTorch != null)
         {
             targetTorch = nearestTorch;
@@ -170,6 +171,56 @@ public class SupportAgentBehaviour : MonoBehaviour, Agent
     {
         return navMeshAgent.destination;
     }
+
+    public bool CheckDistanceBetween(Vector3 a, Vector3 b, float withinDist)
+    {
+        float dist = Vector3.Distance(a, b);
+
+        if (dist < withinDist)
+            return true;
+
+        return false;
+    }
+
+    public List<EnemyBehaviour> GetEnemy()
+    {
+        return gameManager.GetEnemy();
+    }
+
+    public Vector3 SetNavMeshDestination(Vector3 dest)
+    {
+        navMeshAgent.destination = dest;
+
+        return navMeshAgent.destination;
+    }
+
+    public EnemyBehaviour GetNearestEnemy()
+    {
+        float min = float.MaxValue;
+        EnemyBehaviour nearestEnemy = null;
+
+        foreach (EnemyBehaviour e in GetEnemy())
+        {
+            float dist = Vector3.Distance(transform.position, e.transform.position);
+
+            if (dist < min)
+            {
+                dist = min;
+                nearestEnemy = e;
+            }
+        }
+
+        return nearestEnemy;
+
+    }
+
+    public bool Sabotage(EnemyBehaviour target)
+    {
+        target.GetSabotaged(EnemySabotageState.Slowed);
+
+        return false;
+    }
+
 
     public bool CompareDestinationToTorchPositions(Vector3 destination)
     {
@@ -229,5 +280,24 @@ public class SupportAgentBehaviour : MonoBehaviour, Agent
         GoLightDownTorch.children.Add(InvertTorchLightUpResult);
 
         return GoLightDownTorch;
+    }
+
+    public Sequencer SabotageBranch()
+    {
+        Sequencer SabotageBranch = new Sequencer();
+
+        Sequencer IsEnemyNearby = new Sequencer();
+        IsEnemyNearby.children.Add(new NodeIsEnemyNearby());
+        IsEnemyNearby.children.Add(new NodeTargetNearestEnemy());
+
+        Sequencer SabotageEnemy = new Sequencer();
+        SabotageEnemy.children.Add(new NodeIsEnemyInRange());
+        SabotageEnemy.children.Add(new NodeIsEnemyAlreadySabotaged());
+        SabotageEnemy.children.Add(new NodeSabotageEnemy());
+
+        SabotageBranch.children.Add(IsEnemyNearby);
+        SabotageBranch.children.Add(SabotageEnemy);
+
+        return SabotageBranch;
     }
 }

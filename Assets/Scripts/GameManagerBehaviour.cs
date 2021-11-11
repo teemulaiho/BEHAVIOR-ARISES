@@ -43,7 +43,7 @@ public class GameManagerBehaviour : MonoBehaviour
     public Dictionary<TMP_Text, LeadAgentBehaviour> scoreInfo           = new Dictionary<TMP_Text, LeadAgentBehaviour>();
     public Dictionary<Image, LeadAgentBehaviour> agentTargetInfo        = new Dictionary<Image, LeadAgentBehaviour>();
 
-    int leadAgentAmount                                                 = 4;
+    int leadAgentAmount                                                 = 0;
     int supportAgentAmount                                              = 1;
     int enemyAmount                                                     = 1;
     int torchAmount                                                     = 4;
@@ -385,6 +385,11 @@ public class GameManagerBehaviour : MonoBehaviour
         }
 
         return null;
+    }
+
+    public List<EnemyBehaviour> GetEnemy()
+    {
+        return enemies;
     }
 
     public PowerupBehaviour GetPowerup()

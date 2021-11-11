@@ -3,6 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
+public enum EnemySabotageState
+{
+    Slowed,
+    None
+}
+
 public enum EnemyState
 {
     Idle,
@@ -18,6 +24,9 @@ public class EnemyBehaviour : MonoBehaviour, Agent
     [SerializeField] GameManagerBehaviour       gameManager;
     [SerializeField] int                        enemyID;
     [SerializeField] EnemyState                 enemyState;
+    [SerializeField] EnemySabotageState         enemySabotageState;
+
+    [SerializeField] MeshRenderer               meshRenderer;
 
     [SerializeField] ProjectileBehaviour        bulletPrefab;
     [SerializeField] List<ProjectileBehaviour>  bulletList;
@@ -40,6 +49,9 @@ public class EnemyBehaviour : MonoBehaviour, Agent
     [SerializeField] public float               enemyAttackCooldown;
     [SerializeField] public float               enemyAttackCoolDownDT;
 
+
+    [SerializeField] float                      enemySpeed;
+
     [SerializeField] public BT_Node             bt_root;
 
     public void Init(GameManagerBehaviour gm, int id)
@@ -48,6 +60,9 @@ public class EnemyBehaviour : MonoBehaviour, Agent
         enemyID                                 = id;
 
         enemyState                              = EnemyState.Idle;
+        enemySabotageState                      = EnemySabotageState.None;
+
+        meshRenderer                            = GetComponent<MeshRenderer>();
 
         bulletPrefab                            = Resources.Load<ProjectileBehaviour>("Prefabs/Bullet");
         bulletList                              = new List<ProjectileBehaviour>();
@@ -75,6 +90,8 @@ public class EnemyBehaviour : MonoBehaviour, Agent
         rangeCollider.radius                    = enemyRange;
 
         agentsInRangeList                       = new List<LeadAgentBehaviour>();
+        enemySpeed                              = 3.5f;
+
 
         healthBar.SetMaxHealth(enemyMaxHealth);
 
@@ -93,6 +110,17 @@ public class EnemyBehaviour : MonoBehaviour, Agent
     public void EnemyUpdate()
     {
         Float();
+
+        if (enemySabotageState == EnemySabotageState.Slowed)
+        {
+            navMeshAgent.speed = enemySpeed * 0.5f;
+            meshRenderer.material.color = Color.blue;
+        }
+        else
+        {
+            navMeshAgent.speed = enemySpeed;
+            meshRenderer.material.color = Color.red;
+        }
 
         bt_root.Run(this);
     }
@@ -374,6 +402,19 @@ public class EnemyBehaviour : MonoBehaviour, Agent
             ball.RemoveAgent(this);
             hasBall = false;
         }
+    }
+
+    public void GetSabotaged(EnemySabotageState state)
+    {
+        enemySabotageState = state;
+    }
+
+    public bool IsSabotaged()
+    {
+        if (enemySabotageState == EnemySabotageState.None)
+            return false;
+
+        return true;
     }
 
     private void OnTriggerEnter(Collider other)
